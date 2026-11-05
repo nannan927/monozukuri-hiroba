@@ -47,3 +47,7 @@ Direct Uploadを使用しています。Cloudflare内蔵のGit連携への切り
 
 - https://developers.cloudflare.com/pages/get-started/direct-upload/
 - https://developers.cloudflare.com/pages/platform/limits/
+
+## 管理機能の公開
+
+2026-11-05にデプロイ `28ae92aa` で管理画面・D1連携を公開しました。既存38件を取り込み済み。管理画面・公開ページのHTTP 200、未認証の管理APIのHTTP 401を確認しています。初回パスワード設定は所有者が一度限りのリンクから行います。
