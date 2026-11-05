@@ -1,4 +1,16 @@
 {
   "name": "monozukuri-hiroba-tomo",
-  "pages_build_output_dir": "./dist"
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-11-05",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "monozukuri-hiroba-content",
+      "database_id": "3c284235-a1ab-4ea6-8b13-f9234b337ad9",
+      "migrations_dir": "migrations"
+    }
+  ]
 }

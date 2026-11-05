@@ -4,6 +4,12 @@ Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは�
 
 文章・日記・絵画・音楽・学問・開発をまとめる、Astro製の静的な個人サイトです。青紫の文字、レトロPCのイラスト、サイドバーと点線区切りの記事一覧を使っています。
 
+## 投稿・編集
+
+[管理画面](https://monozukuri-hiroba-tomo.pages.dev/admin/) から、投稿・編集・下書き保存・公開・ごみ箱への移動ができます。使い方とデータの保存先は [ADMIN.md](ADMIN.md) を参照してください。
+
+本番の投稿はCloudflare D1に保存します。下記のMarkdownファイルは初回移行元・開発用です。管理画面からの編集がMarkdownに自動で戻ることはありません。
+
 ## 起動
 
 Node.js 24以上を使います（`.nvmrc`あり）。
@@ -14,7 +20,7 @@ npm ci
 npm run dev
 ```
 
-通常は http://localhost:4321/ で表示します。
+Astroだけのプレビューは http://localhost:4321/ です。管理APIと現在の投稿表示には、D1をバインドしたWranglerの実行環境が必要です。
 
 ```sh
 npm run check

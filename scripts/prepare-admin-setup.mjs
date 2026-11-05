@@ -1,0 +1,13 @@
+import {randomBytes,createHash} from 'node:crypto';
+import {mkdirSync,writeFileSync,chmodSync} from 'node:fs';
+const local=process.argv.includes('--local');
+if(!local&&!process.argv.includes('--production'))throw new Error('Specify --local or --production');
+const token=randomBytes(32).toString('hex'),hash=createHash('sha256').update(token).digest('hex'),now=Math.floor(Date.now()/1000),expires=now+86400;
+mkdirSync('.admin-private',{recursive:true,mode:0o700});chmodSync('.admin-private',0o700);
+const prefix=local?'local':'production';
+const sql=`INSERT INTO admin(id,setup_hash,setup_expires,updated_at) VALUES(1,'${hash}',${expires},${now}) ON CONFLICT(id) DO UPDATE SET setup_hash=excluded.setup_hash,setup_expires=excluded.setup_expires,updated_at=excluded.updated_at WHERE admin.password_hash IS NULL;\n`;
+const url=(local?'http://localhost:8788':'https://monozukuri-hiroba-tomo.pages.dev')+'/admin/#setup='+token;
+writeFileSync(`.admin-private/${prefix}-setup.sql`,sql,{mode:0o600});
+writeFileSync(`.admin-private/${prefix}-setup.json`,JSON.stringify({token,url,expires}),{mode:0o600});
+if(!local)writeFileSync('.admin-private/初回設定.md',`# 管理者の初回設定\n\n[ここを開いてパスワードを設定](${url})\n\n14文字以上のパスワードを設定してください。リンクは一度限り・24時間有効です。このファイルは共有しないでください。\n\n設定後は https://monozukuri-hiroba-tomo.pages.dev/admin/ からログインできます。\n`,{mode:0o600});
+console.log(`Prepared .admin-private/${prefix}-setup.sql; setup secret is kept only in the private directory.`);

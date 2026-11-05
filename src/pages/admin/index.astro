@@ -1,0 +1,63 @@
+---
+import '../../styles/global.css';
+import '@fontsource/zen-maru-gothic/500.css';
+---
+<!doctype html><html lang="ja"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="robots" content="noindex,nofollow"/><meta name="referrer" content="no-referrer"/><title>投稿管理 | ものづくり広場</title><link rel="icon" href="/favicon.svg"/></head>
+<body>
+ <header class="admin-header"><a href="/">ものづくり広場</a><span>投稿管理</span><a href="/" target="_blank" rel="noopener">サイトを見る ↗</a></header>
+ <main class="admin-main">
+  <p id="notice" role="status" aria-live="polite">読み込み中…</p>
+  <section id="login-panel" class="login-panel" hidden>
+   <h1 id="login-title">ログイン</h1><p id="login-description">管理者のパスワードを入力してください。</p>
+   <form id="login-form">
+    <label id="setup-token-label" hidden>初期設定コード<input id="setup-token" type="password" autocomplete="off"/></label>
+    <label>パスワード<input id="login-password" type="password" autocomplete="current-password" required maxlength="256"/></label>
+    <label id="password-confirm-label" hidden>パスワード（確認）<input id="password-confirm" type="password" autocomplete="new-password" maxlength="256"/></label>
+    <button class="primary" id="login-submit" type="submit">ログイン</button>
+   </form>
+  </section>
+  <section id="workspace" hidden>
+   <div class="admin-toolbar"><h1>投稿一覧</h1><button class="primary" id="new-post">＋ 新しい投稿</button><button id="export-posts">データを書き出す</button><button id="logout">ログアウト</button></div>
+   <div class="admin-grid">
+    <aside class="post-browser"><label class="sr-only" for="filter-search">投稿を検索</label><input id="filter-search" type="search" placeholder="タイトル・タグで検索"/><label class="sr-only" for="filter-status">公開状態</label><select id="filter-status"><option value="active">ごみ箱以外</option><option value="published">公開中</option><option value="draft">下書き</option><option value="trash">ごみ箱</option><option value="all">すべて</option></select><p id="list-count"></p><div id="post-list"></div></aside>
+    <section class="editor-panel">
+     <p id="editor-empty">左の投稿を選ぶか、新しい投稿を作成してください。</p>
+     <form id="post-form" hidden>
+      <div class="editor-heading"><h2 id="editor-title">新しい投稿</h2><span id="post-state"></span><a id="public-link" target="_blank" rel="noopener" hidden>公開ページ ↗</a></div>
+      <label>タイトル<input name="title" required maxlength="160"/></label>
+      <div class="field-pair"><label>分野<select name="category"><option value="writing">文章</option><option value="diary">日記</option><option value="art">絵画</option><option value="music">音楽</option><option value="study">学問</option><option value="development">開発</option></select></label><label>日付<input type="date" name="date" required/></label></div>
+      <label>URLの名前<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="100" aria-describedby="slug-help"/><small id="slug-help">半角英小文字・数字・ハイフン。保存後は変更できません。</small></label>
+      <label>短い説明<textarea name="description" rows="2" maxlength="500"></textarea></label>
+      <label>タグ<input name="tags" placeholder="日記, 読書"/><small>カンマで区切ります。</small></label>
+      <label>本文<textarea class="body-input" name="body" rows="20" spellcheck="false" maxlength="200000" placeholder="ここに本文を書きます。Markdownも使えます。"></textarea></label>
+      <details class="format-help"><summary>Markdownの書き方</summary><p><code>## 見出し</code> ／ <code>**太字**</code> ／ <code>[リンク名](https://...)</code><br/><code>![画像の説明](https://...)</code> ／ 空行で段落を区切ります。</p></details>
+      <details><summary>画像・音源</summary><label>表紙画像のURL<input name="cover" type="text" placeholder="https://... または /images/..."/></label><label>画像の説明<input name="coverAlt" maxlength="300"/></label><label>音源のURL<input name="audio" type="text" placeholder="https://... または /audio/..."/></label><label>再生時間<input name="duration" maxlength="40" placeholder="3:24"/></label><p class="hint">画像や音源は、公開済みのファイルURLを指定できます。</p></details>
+      <p id="special-note" class="hint" hidden>この作品の動く絵画・Sonic Piコードは引き続き表示されます。ここでは紹介文や分類を編集できます。</p>
+      <div class="save-bar"><button class="primary" id="publish-post" type="submit">公開する</button><button id="draft-post" type="button">下書き保存</button><button id="preview-post" type="button">プレビュー</button><button id="trash-post" type="button" hidden>ごみ箱へ</button></div>
+      <p id="save-status" role="status" aria-live="polite"></p>
+      <details id="history-panel" hidden><summary>過去の保存内容</summary><button id="load-history" type="button">履歴を読み込む</button><div id="history-list"></div><p class="hint">履歴を選ぶと編集欄に読み込みます。保存するまで公開内容は変わりません。</p></details>
+     </form>
+    </section>
+   </div>
+   <details class="account-settings"><summary>パスワードを変更</summary><form id="password-form"><label>現在のパスワード<input name="current" type="password" autocomplete="current-password" required/></label><label>新しいパスワード（14文字以上）<input name="password" type="password" autocomplete="new-password" minlength="14" maxlength="256" required/></label><label>新しいパスワード（確認）<input name="confirm" type="password" autocomplete="new-password" required/></label><button type="submit">変更してログアウト</button></form></details>
+  </section>
+  <noscript>管理画面を使うにはJavaScriptを有効にしてください。</noscript>
+ </main>
+ <dialog id="preview-dialog"><div class="preview-toolbar"><h2>プレビュー</h2><button id="close-preview">閉じる</button></div><p>保存前の表示です。動く作品の操作は公開ページで確認できます。</p><iframe title="投稿のプレビュー" sandbox=""></iframe></dialog>
+</body></html>
+<script>
+ import '../../scripts/admin';
+</script>
+<style>
+ :global(body){background:var(--paper);color:var(--ink)}
+ .admin-header{display:flex;align-items:center;gap:20px;padding:20px 4vw;border-bottom:2px dotted var(--line)}.admin-header>a:first-child{font-size:23px;font-family:var(--heading)}.admin-header>a:last-child{margin-left:auto;font-size:13px}
+ .admin-main{max-width:1300px;margin:auto;padding:24px 4vw 80px}h1{font-size:25px}h2{font-size:20px}#notice{min-height:24px;margin-bottom:20px;white-space:pre-wrap}#notice[data-error='true'],#save-status[data-error='true']{color:#a33151}
+ .login-panel{max-width:440px;margin:40px auto;border:1px solid var(--line);padding:30px;border-radius:8px}.login-panel p{font-size:14px;line-height:1.8;margin:15px 0}
+ label{display:block;font-size:13px;margin:16px 0 6px}input,textarea,select{display:block;width:100%;margin-top:6px;border:1px solid var(--line);border-radius:4px;padding:10px 12px;background:var(--white);color:var(--ink);font:inherit;font-size:15px}textarea{resize:vertical;line-height:1.8}.body-input{font-family:var(--mono);font-size:14px}small,.hint{display:block;color:var(--muted);font-size:12px;line-height:1.8;margin-top:7px}
+ button{border:1px solid var(--line);border-radius:4px;padding:10px 14px;color:var(--ink);background:var(--paper-alt);font:inherit;font-size:13px;cursor:pointer}.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}button:disabled{opacity:.55;cursor:wait}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+ .admin-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px}.admin-toolbar h1{margin-right:auto}.admin-grid{display:grid;grid-template-columns:280px minmax(0,1fr);gap:30px}.post-browser{border-right:2px dotted var(--line);padding-right:24px}#list-count{font-size:12px;margin:14px 0}.editor-panel{min-width:0}.editor-heading{display:flex;align-items:center;flex-wrap:wrap;gap:12px}.editor-heading a{margin-left:auto;font-size:12px}#post-state{font-size:12px}.field-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}input:read-only{background:var(--paper-alt)}
+ details{margin:18px 0;padding-top:12px;border-top:1px dotted var(--line)}summary{cursor:pointer;font-size:13px}.format-help p{font-size:12px;line-height:2}.save-bar{position:sticky;bottom:0;display:flex;gap:10px;flex-wrap:wrap;background:var(--paper);padding:16px 0;border-top:1px solid var(--line);margin-top:24px;z-index:1}#save-status{font-size:13px;min-height:25px;white-space:pre-wrap}.account-settings{max-width:500px;margin-top:40px}.account-settings button,.login-panel button{margin-top:20px}
+ dialog{width:min(1000px,95vw);height:90vh;max-height:95vh;border:1px solid var(--line);border-radius:7px;padding:18px;color:var(--ink);background:var(--paper)}dialog::backdrop{background:#20203688}.preview-toolbar{display:flex;justify-content:space-between;align-items:center}dialog p{font-size:12px;margin:10px 0}iframe{width:100%;height:calc(100% - 90px);border:1px solid var(--line);background:var(--white)}
+ :global(.admin-post){display:block;text-align:left;width:100%;margin:9px 0;padding:13px 10px;background:var(--paper);border:1px solid var(--line);border-radius:4px;color:var(--ink);cursor:pointer}:global(.admin-post[aria-current='true']){background:var(--paper-alt);border-color:var(--ink)}:global(.admin-post strong){display:block;font-size:14px;line-height:1.7;font-weight:500}:global(.admin-post small){display:block;font-size:11px;margin-top:6px;color:var(--muted)}:global(.history-item){display:block;margin:8px 0}
+ @media(max-width:800px){.admin-grid{grid-template-columns:1fr}.post-browser{border-right:0;border-bottom:2px dotted var(--line);padding:0 0 20px}#post-list{max-height:240px;overflow:auto}.admin-main{padding:18px 5vw 40px}.admin-header{flex-wrap:wrap;gap:10px}.admin-header>a:first-child{font-size:19px}.field-pair{gap:10px}.login-panel{padding:22px}.save-bar{gap:7px}button{min-height:42px}}
+</style>
