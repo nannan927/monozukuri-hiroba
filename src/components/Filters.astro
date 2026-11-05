@@ -1,0 +1,19 @@
+---
+import { categories } from '../lib/content';
+---
+<div class="filter-bar" aria-label="作品の種類で絞り込む">
+  <button type="button" data-filter="all" aria-pressed="true">すべて<span class="filter-dot"></span></button>
+  {categories.map(c => <button type="button" data-filter={c.id} aria-pressed="false">{c.name}</button>)}
+</div>
+<p class="sr-only" id="filter-status" role="status" aria-live="polite"></p>
+<script>
+  const filters = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  const cards = document.querySelectorAll<HTMLElement>('[data-category]');
+  filters.forEach(button => button.addEventListener('click', () => {
+    filters.forEach(filter => filter.setAttribute('aria-pressed', String(filter === button)));
+    let count = 0;
+    cards.forEach(card => { card.hidden = button.dataset.filter !== 'all' && card.dataset.category !== button.dataset.filter; if (!card.hidden) count++; });
+    const status = document.querySelector('#filter-status');
+    if (status) status.textContent = `${button.textContent?.trim()}の作品を${count}件表示しています。`;
+  }));
+</script>

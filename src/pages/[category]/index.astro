@@ -1,0 +1,20 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import Icon from '../../components/Icon.astro';
+import { categories, getWorks } from '../../lib/content';
+import { externalLinks } from '../../data/external-links';
+export function getStaticPaths() { return categories.map(category => ({ params: { category: category.id }, props: { category } })); }
+const { category } = Astro.props;
+const works = (await getWorks()).filter(work => work.data.category === category.id);
+const links = category.id === 'development' ? externalLinks.development : category.id === 'diary' ? externalLinks.diary : [];
+---
+<Layout title={category.name} description={category.description}>
+  <header class="page-intro"><div class="breadcrumb"><a href="/">ホーム</a><span>/</span><span>{category.name}</span></div><p class="page-kicker">{category.english}</p><h1><Icon name={category.icon} size={37} />{category.name}</h1></header>
+  <section class="archive" aria-label={`${category.name}の作品一覧`}>
+    <nav class="category-tabs" aria-label="作品の分野"><a href="/works/">すべて</a>{categories.map(c => <a href={`/${c.id}/`} aria-current={c.id === category.id ? 'page' : undefined}>{c.name}</a>)}</nav>
+    {links.length > 0 && <ul class="external-links page-links">{links.map(link => <li><a href={link.url}>{link.title} ↗</a></li>)}</ul>}
+    {category.id === 'writing' && <p class="sample-note"><a href="/literature/">文学の一覧 →</a></p>}
+    {works.length > 0 ? <><p class="sample-note">{works.length}件</p><div class="works-grid">{works.map(work => <WorkCard work={work} />)}</div></> : <p class="empty-content">{category.id === 'development' ? '制作物はGitHubで公開しています。' : 'まだ作品はありません。'}</p>}
+  </section>
+</Layout>

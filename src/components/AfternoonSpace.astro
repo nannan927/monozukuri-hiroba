@@ -1,0 +1,53 @@
+---
+import source from '../../public/music/afternoon-space/afternoon-space.rb?raw';
+---
+<section class="sonic-work" data-sonic-work aria-label="午後の余白のSonic Piコード">
+  <div class="sonic-meta"><span>Sonic Pi</span><span>86 BPM</span><span>44小節 / 約2分03秒で一周</span></div>
+  <p>ピアノ、ベース、ドラムに、管楽器風のシンセと声の合いの手を重ねたビート。</p>
+  <div class="sonic-actions">
+    <button type="button" data-copy-sonic hidden>コードをコピー</button>
+    <a href="/music/afternoon-space/afternoon-space.rb" download="afternoon-space.rb">Sonic Piファイルを保存 ↓</a>
+    <span data-copy-status role="status" aria-live="polite"></span>
+  </div>
+  <p class="sonic-note">Sonic Piの空のバッファに全文を貼り付けてRun。終了はStop。サイト内の試聴音源は未掲載です。</p>
+  <details data-sonic-details>
+    <summary>コード全文を見る</summary>
+    <pre tabindex="0" aria-label="Sonic Piコード全文"><code data-sonic-source>{source}</code></pre>
+  </details>
+</section>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-sonic-work]').forEach(root => {
+    const button = root.querySelector<HTMLButtonElement>('[data-copy-sonic]')!;
+    const status = root.querySelector<HTMLElement>('[data-copy-status]')!;
+    const code = root.querySelector<HTMLElement>('[data-sonic-source]')!;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent || '');
+        status.textContent = 'コピーしました';
+      } catch {
+        root.querySelector<HTMLDetailsElement>('[data-sonic-details]')!.open = true;
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        selection?.removeAllRanges(); selection?.addRange(range);
+        status.textContent = 'コードを選択しました。手動でコピーするか、ファイルを保存してください。';
+      }
+    });
+    button.hidden = false;
+  });
+</script>
+<style>
+  .sonic-work { margin: 26px 0; padding: 22px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper-alt); }
+  .sonic-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font: 12px var(--mono); }
+  .sonic-work p { font-size: 14px; line-height: 1.9; margin: 16px 0; }
+  .sonic-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; font-size: 12px; }
+  .sonic-actions button { background: var(--ink); color: var(--paper); border: 1px solid var(--ink); border-radius: 4px; padding: 10px 14px; font: inherit; cursor: pointer; }
+  .sonic-actions a { text-decoration: underline; text-underline-offset: 4px; }
+  [data-copy-status] { flex-basis: 100%; color: var(--muted); }
+  [data-copy-status]:empty { display: none; }
+  .sonic-work .sonic-note { font-size: 12px; color: var(--muted); }
+  summary { cursor: pointer; font-size: 13px; width: fit-content; }
+  pre { max-height: 480px; overflow: auto; padding: 16px; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; font-size: 12px; line-height: 1.8; tab-size: 2; }
+  code { font-family: var(--mono); }
+  @media(max-width:650px) { .sonic-work { padding: 16px; } }
+</style>

@@ -1,0 +1,9 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate } from '../lib/content';
+interface Props { works: CollectionEntry<'works'>[] }
+const { works } = Astro.props;
+---
+<div class="post-list">
+  {works.map(work => <article><h3><a href={`/works/${work.id}/`}>{work.data.title}</a></h3><time datetime={work.data.date.toISOString()}>{formatDate(work.data.date)}</time>{work.data.tags.length > 0 && <div class="compact-tags">{work.data.tags.map(tag => <a href={`/search/?q=${encodeURIComponent(tag)}`}>#{tag}</a>)}</div>}</article>)}
+</div>

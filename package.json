@@ -1,0 +1,29 @@
+{
+  "name": "monozukuri-hiroba-geek",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "astro dev --host 0.0.0.0",
+    "build": "astro build",
+    "preview": "astro preview --host 0.0.0.0",
+    "check": "astro check",
+    "deploy": "npm run check && npm run build && npx --yes wrangler@4.157.0 pages deploy dist --project-name monozukuri-hiroba-tomo --branch main",
+    "render:autumn": "node scripts/render-autumn-dusk.mjs",
+    "test:autumn": "node --test scripts/autumn-dusk.test.mjs"
+  },
+  "dependencies": {
+    "astro": "7.4.5",
+    "@fontsource/zen-maru-gothic": "5.3.1",
+    "@astrojs/rss": "4.0.19",
+    "@astrojs/markdown-satteri": "0.4.6"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "typescript": "^5.9.3",
+    "@napi-rs/canvas": "1.1.0"
+  }
+}

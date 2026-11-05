@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
+import { getWorks, categoryFor, formatDate } from '../lib/content';
+const works = await getWorks();
+const index = works.map(work => ({ title: work.data.title, description: work.data.description, text: `${work.data.title} ${work.data.description} ${work.body || ''} ${work.data.tags.join(' ')} ${categoryFor(work.data.category).name}`, url: `/works/${work.id}/`, category: categoryFor(work.data.category).name, date: formatDate(work.data.date), sample: work.data.sample }));
+---
+<Layout title="検索">
+  <header class="page-intro"><div class="breadcrumb"><a href="/">ホーム</a><span>/</span><span>検索</span></div><p class="page-kicker">SEARCH</p><h1>検索</h1><p>作品名・本文・タグを検索。</p></header>
+  <section class="archive"><form class="search-form" action="/search/" role="search"><label class="search-field"><span class="sr-only">検索する言葉</span><Icon name="search" size={19} /><input id="search-input" type="search" name="q" placeholder="検索する言葉" autocomplete="off" /></label><button class="search-submit" type="submit">検索</button></form><p class="search-count" id="search-status" role="status" aria-live="polite">すべての作品 {works.length}件</p><noscript><p>絞り込みにはJavaScriptが必要です。以下からすべての作品を読めます。</p></noscript><ul class="search-results" id="search-results">{index.map(work => <li><a href={work.url}><span>{work.category} · {work.date}{work.sample ? ' · 見本' : ''}</span><h2>{work.title} ↗</h2><p>{work.description}</p></a></li>)}</ul><p class="empty-search" id="empty-search" hidden>該当する作品がありません。</p></section>
+  <script id="search-data" type="application/json" set:html={JSON.stringify(index).replace(/</g, '\\u003c')} />
+  <script>
+    type SearchWork = { title: string; description: string; text: string; url: string; category: string; date: string; sample: boolean };
+    const index: SearchWork[] = JSON.parse(document.querySelector('#search-data')?.textContent || '[]');
+    const input = document.querySelector<HTMLInputElement>('#search-input')!;
+    const results = document.querySelector('#search-results')!;
+    const status = document.querySelector('#search-status')!;
+    const empty = document.querySelector<HTMLElement>('#empty-search')!;
+    const normalize = (value: string) => value.normalize('NFKC').toLocaleLowerCase('ja');
+    function search(updateUrl = true) {
+      const query = input.value.trim();
+      const terms = normalize(query).split(/\s+/).filter(Boolean);
+      const matches = index.filter(work => terms.every(term => normalize(work.text).includes(term)));
+      results.replaceChildren(...matches.map(work => {
+        const li = document.createElement('li');
+        const link = document.createElement('a'); link.href = work.url;
+        const meta = document.createElement('span'); meta.textContent = `${work.category} · ${work.date}${work.sample ? ' · 見本' : ''}`;
+        const title = document.createElement('h2'); title.textContent = `${work.title} ↗`;
+        const description = document.createElement('p'); description.textContent = work.description;
+        link.append(meta, title, description); li.append(link); return li;
+      }));
+      status.textContent = query ? `「${query}」に見つかった作品 ${matches.length}件` : `すべての作品 ${matches.length}件`;
+      empty.hidden = matches.length > 0;
+      if (updateUrl) { const url = new URL(location.href); if (query) url.searchParams.set('q', query); else url.searchParams.delete('q'); history.replaceState(null, '', url); }
+    }
+    input.value = new URLSearchParams(location.search).get('q') || '';
+    search(false);
+    input.addEventListener('input', () => search());
+    document.querySelector('.search-form')?.addEventListener('submit', event => { event.preventDefault(); search(); });
+    addEventListener('popstate', () => { input.value = new URLSearchParams(location.search).get('q') || ''; search(false); });
+  </script>
+</Layout>

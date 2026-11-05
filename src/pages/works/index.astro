@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import Filters from '../../components/Filters.astro';
+import { getWorks } from '../../lib/content';
+const works = await getWorks();
+---
+<Layout title="つくったもの">
+  <header class="page-intro"><div class="breadcrumb"><a href="/">ホーム</a><span>/</span><span>つくったもの</span></div><p class="page-kicker">ALL WORKS</p><h1>作品一覧</h1></header>
+  <section class="archive" aria-label="すべての作品"><Filters /><p class="sample-note">{works.length}件</p><div class="works-grid">{works.map(work => <WorkCard work={work} />)}</div></section>
+</Layout>

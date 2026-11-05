@@ -1,0 +1,5 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { externalLinks } from '../data/external-links';
+---
+<Layout title="創作"><header class="page-intro"><div class="breadcrumb"><a href="/">ホーム</a><span>/</span><span>創作</span></div><p class="page-kicker">CREATIVE</p><h1>創作</h1></header><ul class="external-links page-links">{externalLinks.creative.map(link => <li><a href={link.url}>{link.title} ↗</a></li>)}</ul></Layout>

@@ -1,0 +1,20 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import { categoryFor, formatDate } from '../lib/content';
+interface Props { work: CollectionEntry<'works'> }
+const { work } = Astro.props;
+const category = categoryFor(work.data.category);
+---
+<article class="work-card" data-category={category.id}>
+  <a class="work-link" href={`/works/${work.id}/`}>
+    <div class:list={['work-cover', `cover-${category.id}`]}>
+      {work.data.cover ? <img src={work.data.cover} alt={work.data.coverAlt || ''} width="600" height="380" loading="lazy" /> : category.id === 'music' ? <img src="/images/cassette.svg" alt="" width="260" height="140" loading="lazy" /> : <Icon name={category.icon} size={34} />}
+    </div>
+    <div>
+      <div class="work-meta"><span class="category-label">{category.name}</span><time datetime={work.data.date.toISOString()}>{formatDate(work.data.date)}</time>{work.data.sample && <span>見本</span>}{work.data.duration && <span>{work.data.duration}</span>}</div>
+      <h3>{work.data.title}</h3>
+      <div class="work-tags">{work.data.tags.map(tag => <span>#{tag}</span>)}</div>
+    </div>
+  </a>
+</article>

@@ -1,0 +1,10 @@
+import { createCanvas } from '@napi-rs/canvas';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { AutumnDusk, WIDTH, HEIGHT, INITIAL_SEED } from '../src/lib/autumn-dusk.ts';
+const canvas = createCanvas(WIDTH, HEIGHT);
+const artwork = new AutumnDusk(INITIAL_SEED, createCanvas);
+artwork.render(canvas.getContext('2d'), 0);
+mkdirSync('public/artworks/autumn-dusk', { recursive: true });
+writeFileSync('public/artworks/autumn-dusk/poster.png', canvas.toBuffer('image/png'));
+writeFileSync('public/artworks/autumn-dusk/poster.webp', canvas.toBuffer('image/webp', 88));
+console.log(`Rendered original composition: ${artwork.twigs.length} twigs, ${artwork.leaves.length} leaves; ${WIDTH} × ${HEIGHT}.`);

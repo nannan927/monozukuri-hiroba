@@ -1,0 +1,29 @@
+---
+import { render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Icon from '../../components/Icon.astro';
+import AutumnDusk from '../../components/AutumnDusk.astro';
+import AfternoonSpace from '../../components/AfternoonSpace.astro';
+import { getWorks, categoryFor, formatDate } from '../../lib/content';
+export async function getStaticPaths() { return (await getWorks()).map(work => ({ params: { id: work.id }, props: { work } })); }
+const { work } = Astro.props;
+const { Content } = await render(work);
+const category = categoryFor(work.data.category);
+---
+<Layout title={work.data.title} description={work.data.description}>
+  <article class="article-wrap">
+    <nav class="breadcrumb" aria-label="現在の位置"><a href="/">ホーム</a><span>/</span><a href={`/${category.id}/`}>{category.name}</a><span>/</span><span>{work.data.title}</span></nav>
+    <div class="work-meta"><a class:list={['category-label', category.color]} href={`/${category.id}/`}><Icon name={category.icon} size={14} />{category.name}</a><time datetime={work.data.date.toISOString()}>{formatDate(work.data.date)}</time></div>
+    <h1>{work.data.title}</h1>{!work.data.source && <p class="article-description">{work.data.description}</p>}
+    <div class="work-tags">{work.data.tags.map(tag => <a href={`/search/?q=${encodeURIComponent(tag)}`}>#{tag}</a>)}</div>
+    {work.data.sample && <p class="sample-banner">このページは展示用の見本です。文章・画像・音源はサイト制作時に用意したサンプルで、ご本人の作品ではありません。</p>}
+    {work.data.cover && !work.data.sketch && <img class="article-image" src={work.data.cover} alt={work.data.coverAlt || work.data.title} width="600" height="380" />}
+    {work.data.sketch === 'autumn-dusk' && <AutumnDusk />}
+    {work.data.sonicPi === 'afternoon-space' && <AfternoonSpace />}
+    {work.data.audio && <div class="audio-player"><p><Icon name="music" />{work.data.title}</p><audio controls preload="metadata" src={work.data.audio} aria-label={`${work.data.title}を試聴`}>音声の再生に対応したブラウザーをご利用ください。</audio><small>オリジナルの合成音による試聴用サンプル · {work.data.duration} · 自動再生はしません</small></div>}
+    {work.data.emptySource && <p class="empty-content">元サイトでも本文は空欄の投稿です。</p>}
+    <div class="article-body"><Content /></div>
+    {work.data.source && <p class="source-link"><a href={work.data.source}>元の記事 ↗</a></p>}
+    <footer class="article-end"><a href={`/${category.id}/`}>← {category.name}の一覧へ</a><a href="/works/">ほかの作品も見てみる <Icon name="arrow" size={17} /></a></footer>
+  </article>
+</Layout>

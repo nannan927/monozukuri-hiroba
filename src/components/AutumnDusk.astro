@@ -1,0 +1,139 @@
+<section class="artwork-viewer" data-autumn-viewer aria-label="秋の余白 インタラクティブ作品">
+  <div class="artwork-stage">
+    <img data-art-poster src="/artworks/autumn-dusk/poster.webp" alt="淡い黄昏の空を囲む秋の枝葉。中央には水面を思わせる細い線が広がる。" width="1200" height="800" />
+    <canvas data-art-canvas width="1200" height="800" tabindex="0" role="img" aria-label="秋の余白。再生すると空の色が変化し、葉が色づいて落ちます。" aria-describedby="autumn-keys" hidden></canvas>
+  </div>
+  <div class="artwork-controls" data-art-controls hidden>
+    <button type="button" data-art-play aria-pressed="false">再生</button>
+    <button type="button" data-art-restart>最初から</button>
+    <button type="button" data-art-new>別の構図</button>
+    <label>速度 <select data-art-speed aria-label="再生速度"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+    <button type="button" data-art-save>PNG保存</button>
+  </div>
+  <div class="artwork-caption"><span data-art-status role="status" aria-live="polite">静止画</span><span data-art-seed>構図 241</span><a href="/artworks/autumn-dusk/AutumnDusk.pde" download="AutumnDusk.pde">元のProcessingファイル ↓</a></div>
+  <details class="artwork-help" data-art-help><summary>操作方法</summary><p id="autumn-keys">絵をクリックしてから、Space：再生／一時停止、R：最初から、N：別の構図、S：PNG保存、↑↓：速度、H：この説明を開閉。スマートフォンでは絵の下のボタンを使えます。</p><p>音声はありません。再生ボタンを押すまで動きません。</p></details>
+  <noscript><p class="empty-content">静止画を表示しています。動かすにはJavaScriptを有効にしてください。</p></noscript>
+</section>
+<script>
+  import { AutumnDusk, WIDTH, HEIGHT, INITIAL_SEED } from '../lib/autumn-dusk';
+  const root = document.querySelector<HTMLElement>('[data-autumn-viewer]');
+  if (root) {
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-art-canvas]')!;
+    const status = root.querySelector<HTMLElement>('[data-art-status]')!;
+    try {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas unavailable');
+      const context = ctx;
+      const play = root.querySelector<HTMLButtonElement>('[data-art-play]')!;
+      const speedSelect = root.querySelector<HTMLSelectElement>('[data-art-speed]')!;
+      const help = root.querySelector<HTMLDetailsElement>('[data-art-help]')!;
+      const seedLabel = root.querySelector<HTMLElement>('[data-art-seed]')!;
+      const makeCanvas = (width: number, height: number) => {
+        const result = document.createElement('canvas'); result.width = width; result.height = height; return result;
+      };
+      let seed = INITIAL_SEED, scene = new AutumnDusk(seed, makeCanvas);
+      let time = 0, speed = 1, playing = false, inView = true;
+      let frameId = 0, lastTick = 0, lastPaint = 0;
+      const speeds = [.25, .5, 1, 2, 4];
+      const paint = () => scene.render(context, time);
+      function updateStatus() {
+        play.textContent = playing ? '一時停止' : '再生';
+        play.setAttribute('aria-pressed', String(playing));
+        status.textContent = playing ? '再生中' : '停止中';
+        seedLabel.textContent = `構図 ${seed}`;
+      }
+      function cancelLoop() {
+        cancelAnimationFrame(frameId); frameId = 0; lastTick = 0; lastPaint = 0;
+      }
+      function tick(now: number) {
+        frameId = 0;
+        if (!playing || !inView || document.hidden) { lastTick = 0; return; }
+        if (lastTick) time += Math.min((now - lastTick) / 1000, .1) * speed;
+        lastTick = now;
+        if (!lastPaint || now - lastPaint >= 1000 / 30 - 1) { paint(); lastPaint = now; }
+        frameId = requestAnimationFrame(tick);
+      }
+      function resumeLoop() {
+        if (playing && inView && !document.hidden && !frameId) frameId = requestAnimationFrame(tick);
+      }
+      function togglePlayback() {
+        playing = !playing; updateStatus();
+        if (playing) resumeLoop(); else cancelLoop();
+      }
+      function restart() { time = 0; lastTick = 0; paint(); updateStatus(); }
+      function newComposition() { seed++; scene = new AutumnDusk(seed, makeCanvas); restart(); }
+      function changeSpeed(value: number) {
+        if (!speeds.includes(value)) return;
+        speed = value; speedSelect.value = String(speed);
+      }
+      function save() {
+        paint();
+        canvas.toBlob(blob => {
+          if (!blob) { status.textContent = '保存できませんでした。もう一度お試しください。'; return; }
+          const url = URL.createObjectURL(blob), link = document.createElement('a');
+          link.href = url; link.download = `autumn-${seed}-${Math.floor(time * 30).toString().padStart(4, '0')}.png`;
+          document.body.append(link); link.click(); link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }, 'image/png');
+      }
+      play.addEventListener('click', togglePlayback);
+      root.querySelector('[data-art-restart]')!.addEventListener('click', restart);
+      root.querySelector('[data-art-new]')!.addEventListener('click', newComposition);
+      root.querySelector('[data-art-save]')!.addEventListener('click', save);
+      speedSelect.addEventListener('change', () => changeSpeed(Number(speedSelect.value)));
+      canvas.addEventListener('keydown', event => {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        const key = event.key.toLowerCase();
+        if (![' ', 'r', 'n', 's', 'h', 'arrowup', 'arrowdown'].includes(key)) return;
+        event.preventDefault();
+        if (key === ' ') togglePlayback();
+        if (key === 'r') restart();
+        if (key === 'n') newComposition();
+        if (key === 's') save();
+        if (key === 'h') help.open = !help.open;
+        if (key === 'arrowup') changeSpeed(Math.min(4, speed * 2));
+        if (key === 'arrowdown') changeSpeed(Math.max(.25, speed / 2));
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelLoop(); else resumeLoop();
+      });
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+          inView = entries[0].isIntersecting;
+          if (inView) resumeLoop(); else cancelLoop();
+        });
+        observer.observe(canvas);
+        window.addEventListener('pagehide', () => observer.disconnect());
+        window.addEventListener('pageshow', () => observer.observe(canvas));
+      }
+      window.addEventListener('pagehide', cancelLoop);
+      window.addEventListener('pageshow', resumeLoop);
+      canvas.width = WIDTH; canvas.height = HEIGHT;
+      paint();
+      root.querySelector<HTMLElement>('[data-art-poster]')!.hidden = true;
+      canvas.hidden = false;
+      root.querySelector<HTMLElement>('[data-art-controls]')!.hidden = false;
+      updateStatus();
+    } catch {
+      status.textContent = '静止画を表示しています';
+    }
+  }
+</script>
+<style>
+  .artwork-viewer { margin: 26px 0 30px; }
+  .artwork-stage { aspect-ratio: 3 / 2; background: #d8c6a4; width: 100%; }
+  .artwork-stage > img, .artwork-stage > canvas { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; }
+  .artwork-stage > canvas:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
+  .artwork-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 17px; }
+  .artwork-controls button, .artwork-controls select { border: 1px solid var(--line); border-radius: 4px; background: var(--paper-alt); color: var(--ink); font: inherit; font-size: 12px; min-height: 38px; padding: 7px 12px; }
+  .artwork-controls button:first-child { min-width: 78px; background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .artwork-controls button:hover { filter: brightness(.95); }
+  .artwork-controls label { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; }
+  .artwork-controls select { padding: 7px; }
+  .artwork-caption { display: flex; flex-wrap: wrap; gap: 7px 17px; align-items: center; margin-top: 13px; font-size: 11px; color: var(--muted); }
+  .artwork-caption a { margin-left: auto; }
+  .artwork-help { margin-top: 18px; font-size: 12px; color: var(--muted); }
+  .artwork-help summary { cursor: pointer; width: fit-content; }
+  .artwork-help p { margin: 9px 0; line-height: 1.9; }
+  @media(max-width:650px) { .artwork-caption a { margin-left: 0; } .artwork-controls { gap: 8px; } }
+</style>
