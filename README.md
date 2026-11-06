@@ -2,7 +2,7 @@
 
 Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは変更しません。公開手順は [CLOUDFLARE.md](CLOUDFLARE.md) を参照してください。
 
-文章・仕事・絵画・音楽・映像・研究・開発をまとめる、AstroとCloudflare D1による個人サイトです。青紫の文字、レトロPCのイラスト、サイドバーと点線区切りの記事一覧を使っています。
+文章・仕事・絵画・音楽・映像・研究・開発をまとめる、AstroとCloudflare D1による個人サイトです。青紫の文字と白い余白、大きな明朝体、ベジェ曲線、シアンの作品枠と鮮やかな色面を使ったGlyphs由来のデザインです。
 
 ## 投稿・編集
 
@@ -78,7 +78,9 @@ Markdownの変更は開発用プレビューと初期投入用データに反映
 
 ## 編集場所
 
-- トップページ：`src/pages/index.astro`
+- トップページ（開発・本番で共有）：`src/lib/editorial-home.ts`、`src/lib/editorial-hero.ts`
+- 公開デザイン：`src/styles/editorial.css`
+- 本番の記事・分類・検索：`cms/render.mjs`
 - 自己紹介：`src/pages/about.astro`
 - 近況：`src/pages/now.astro`
 - 青い文字などの色：`src/styles/global.css` 冒頭のCSS変数
@@ -87,7 +89,7 @@ Markdownの変更は開発用プレビューと初期投入用データに反映
 
 ## 含まれる機能
 
-カテゴリ別一覧、作品詳細、種類による絞り込み、日本語全文検索、ネイティブ音声プレイヤー、昼夜の配色切り替え、RSS、404ページ、レスポンシブ表示。配色の選択のみブラウザーのlocalStorageに保存します。アクセス解析や外部フォントへの通信はありません。
+カテゴリ別一覧、作品詳細、種類による絞り込み、日本語全文検索、ネイティブ音声プレイヤー、RSS、404ページ、レスポンシブ表示。公開ページはライトテーマです。アクセス解析や外部フォントへの通信はありません。
 
 ## 移行済みの内容
 
@@ -97,7 +99,7 @@ Markdownの変更は開発用プレビューと初期投入用データに反映
 
 新しい記事には `source` などの移行用情報は不要です。既存記事の `source` は元URL、`sourceCategory` は元の分類、`sourceOrder` は同日の並び順を示します。
 
-PC・カセットなどのSVGはこのサイト向けのオリジナル素材です。見出しのZen Maru Gothicは自己ホストし、SIL Open Font Licenseに基づいて利用しています。
+PC・カセットなどのSVGはこのサイト向けのオリジナル素材です。公開ページのNoto Serif JP・Cormorant Garamondと、管理画面のZen Maru Gothicは自己ホストし、SIL Open Font Licenseに基づいて利用しています。
 
 ## ホスティング
 

@@ -1,9 +1,9 @@
+import {renderHome} from '../src/lib/editorial-home.ts';
 import {categories,categoryName,esc} from './content.mjs';
 const pathFor=p=>`/works/${p.slug}/`;
 const tags=p=>`<div class="work-tags">${p.tags.map(t=>`<a href="/search/?q=${encodeURIComponent(t)}">#${esc(t)}</a>`).join('')}</div>`;
 const date=p=>esc(p.date.replaceAll('-','.'));
 const intro=(title,kicker='')=>`<header class="page-intro"><nav class="breadcrumb"><a href="/">ホーム</a><span>/</span><span>${esc(title)}</span></nav><p class="page-kicker">${kicker}</p><h1>${esc(title)}</h1></header>`;
-const postList=posts=>`<div class="post-list">${posts.map(p=>`<article><h3><a href="${pathFor(p)}">${esc(p.title)}</a></h3><time datetime="${p.date}">${date(p)}</time>${tags(p)}</article>`).join('')}</div>`;
 const cards=posts=>`<div class="works-grid">${posts.map(p=>`<article class="work-card" data-category="${p.category}"><a class="work-link" href="${pathFor(p)}"><div class="work-cover cover-${p.category}">${p.cover?`<img src="${esc(p.cover)}" alt="${esc(p.coverAlt)}" loading="lazy" width="600" height="380">`:p.category==='music'?'<img src="/images/cassette.svg" alt="" width="260" height="140">':`<span>${esc(categoryName(p.category))}</span>`}</div><div><div class="work-meta"><span class="category-label">${categoryName(p.category)}</span><time datetime="${p.date}">${date(p)}</time>${p.duration?`<span>${esc(p.duration)}</span>`:''}</div><h3>${esc(p.title)}</h3><div class="work-tags">${p.tags.map(t=>`<span>#${esc(t)}</span>`).join('')}</div></div></a></article>`).join('')||'<p class="empty-content">まだ投稿はありません。</p>'}</div>`;
 const external=(links)=>`<ul class="external-links">${(links||[]).map(l=>`<li><a href="${esc(l.url)}">${esc(l.title)} ↗</a></li>`).join('')}</ul>`;
 
@@ -21,6 +21,7 @@ export function shell(template,main,posts,{title='',description='文章・仕事
   .replace(/(<link rel="canonical" href=")[^"]*/,(_,p)=>p+esc(origin+path))
   .replace(/(<meta property="og:url" content=")[^"]*/,(_,p)=>p+esc(origin+path))
   .replace(/<small data-count-for="([a-z]+)">[\s\S]*?<\/small>/g,(_,c)=>`<small>${String(posts.filter(p=>p.category===c).length).padStart(2,'0')}</small>`);
+ html=html.replace(/(<nav class="main-nav hg-nav"[^>]*>)([\s\S]*?)(<\/nav>)/,(_,start,nav,end)=>start+nav.replace(/<a([^>]*?)href="([^"]+)"([^>]*)>/g,(_m,before,href,after)=>`<a${before}href="${href}"${after}${path.startsWith(href)?' aria-current="page"':''}>`)+end);
  const allTags=[...new Set(posts.flatMap(p=>p.tags))].slice(0,7);
  html=html.replace('__CMS_TAGS__',()=>allTags.map(t=>`<a href="/search/?q=${encodeURIComponent(t)}">#${esc(t)}</a>`).join(''));
  return html;
@@ -29,8 +30,7 @@ export function shell(template,main,posts,{title='',description='文章・仕事
 export function publicPage(path,url,posts,t){
  let main,title='',description;const by=c=>posts.filter(p=>p.category===c);
  if(path==='/'){
-  const art=by('art')[0],music=by('music');
-  main=`<header class="home-heading"><h1>最近の更新<span class="cursor" aria-hidden="true">_</span></h1><a class="sample-label" href="/works/">全${posts.length}件 →</a></header><div class="updates-grid"><section class="update-column"><h2><a href="/writing/">文章</a></h2>${postList(by('writing').slice(0,5))}<a class="section-more" href="/writing/">文章の一覧 →</a></section><section class="update-column"><h2><a href="/work/">仕事</a></h2>${postList(by('work').slice(0,4))}${external(t.links.work)}<a class="section-more" href="/work/">仕事の一覧 →</a><div class="subsection"><h2><a href="/video/">映像</a></h2>${postList(by('video').slice(0,3))}<a class="section-more" href="/video/">映像の一覧 →</a></div></section><section class="update-column"><h2><a href="/development/">開発</a></h2>${postList(by('development').slice(0,3))}${external(t.links.development)}${art?`<div class="subsection"><h2><a href="/art/">絵画</a></h2>${art.cover?`<a class="painting-preview" href="${pathFor(art)}"><img src="${esc(art.cover)}" alt="${esc(art.coverAlt)}" width="1200" height="800"></a>`:''}${postList([art])}</div>`:''}${music.length?`<div class="subsection"><h2><a href="/music/">音楽</a></h2>${postList(music.slice(0,3))}<a class="section-more" href="/music/">音楽の一覧 →</a></div>`:''}<div class="subsection"><h2><a href="/creative/">創作</a></h2>${external(t.links.creative)}</div></section></div><div class="lower-grid"><section><h2>アーカイブ</h2><nav class="archive-links">${categories.map(c=>`<a href="/${c[0]}/">${c[1]}<span>${by(c[0]).length}</span></a>`).join('')}</nav><a class="section-more" href="/literature/">文学 →</a></section><section><h2>新しい投稿</h2>${postList(posts.slice(0,3))}</section></div>`;
+  main=renderHome(posts,t.links,categories.map(c=>({id:c[0],name:c[1]})));
  }else if(path==='/works/'||path==='/literature/'||categories.some(c=>path===`/${c[0]}/`)){
   const category=categories.find(c=>path===`/${c[0]}/`);
   let selected=category?by(category[0]):path==='/literature/'?posts.filter(p=>p.tags.includes('文学')):posts;

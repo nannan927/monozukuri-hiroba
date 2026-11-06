@@ -1,23 +1,20 @@
 ---
-import '@fontsource/zen-maru-gothic/500.css';
-import '@fontsource/zen-maru-gothic/700.css';
+import '@fontsource/noto-serif-jp/400.css';
+import '@fontsource/cormorant-garamond/400.css';
 import '../styles/global.css';
-import Icon from '../components/Icon.astro';
-import Computer from '../components/Computer.astro';
-import { categories, getWorks } from '../lib/content';
+import '../styles/editorial.css';
+import { categories } from '../lib/content';
 interface Props { title?: string; description?: string }
 const { title, description = '文章・仕事・絵画・音楽・映像・研究・開発の個人サイト。' } = Astro.props;
 const current = Astro.url.pathname;
 const pageTitle = title ? `${title} | ものづくり広場` : 'ものづくり広場';
-const works = await getWorks();
-const tags = [...new Set(works.flatMap(work => work.data.tags))].slice(0, 7);
 ---
 <!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f7f7fb" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="description" content={description} />
     <title>{pageTitle}</title>
     <link rel="canonical" href={new URL(current, Astro.site)} />
@@ -28,54 +25,20 @@ const tags = [...new Set(works.flatMap(work => work.data.tags))].slice(0, 7);
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ja_JP" />
     <meta property="og:url" content={new URL(current, Astro.site)} />
-    <script is:inline>
-      try { if (localStorage.getItem('hiroba-theme') === 'night') document.documentElement.dataset.theme = 'night'; } catch {}
-    </script>
+
   </head>
-  <body>
+  <body id="hiroba-glyphs">
     <a class="skip-link" href="#main">本文へ進む</a>
-    <div class="page-wrap">
-      <header class="site-header">
-        <a class="brand" href="/" aria-label="ものづくり広場 ホーム"><span>ものづくり</span><Computer size={66} /><span>広場</span></a>
-        <nav class="main-nav" aria-label="メインメニュー">
-          <a class:list={['home-link', { active: current === '/' }]} href="/" aria-label="ホーム" aria-current={current === '/' ? 'page' : undefined}><Icon name="home" size={21} /></a>
+    <div class="hg-wrap">
+      <header class="hg-header">
+        <a class="hg-brand" href="/" aria-label="ものづくり広場 ホーム"><span class="hg-mark" aria-hidden="true">m</span>ものづくり広場</a>
+        <nav class="main-nav hg-nav" aria-label="メインメニュー">
           {categories.map(c => <a class:list={{ active: current.startsWith(`/${c.id}/`) }} href={`/${c.id}/`} aria-current={current.startsWith(`/${c.id}/`) ? 'page' : undefined}>{c.name}</a>)}
-          <a class:list={{ active: current === '/now/' }} href="/now/" aria-current={current === '/now/' ? 'page' : undefined}>/now</a>
-          <a class:list={{ active: current === '/about/' }} href="/about/" aria-current={current === '/about/' ? 'page' : undefined}>about</a>
-          <button class="icon-button" id="theme-toggle" type="button" aria-label="夜の色に切り替える" aria-pressed="false"><Icon name="sun" size={20} /></button>
         </nav>
       </header>
-      <div class="site-grid">
-        <main id="main"><slot /></main>
-        <aside class="site-sidebar" aria-label="サイト案内">
-          <a class="desk-link" href="/about/" aria-label="このサイトについて"><img src="/images/geek-desk.svg" alt="顔のあるレトロPCとフロッピーディスク" width="240" height="180" /></a>
-          <nav class="sidebar-section" aria-label="分野別の一覧">
-            <h2>Contents<span class="heading-mark" aria-hidden="true">↙</span></h2>
-            <ul class="directory-list">{categories.map(c => <li><a href={`/${c.id}/`}><span><Icon name={c.icon} size={18} />{c.name}</span><small>{String(works.filter(work => work.data.category === c.id).length).padStart(2, '0')}</small></a></li>)}</ul>
-          </nav>
-          <form class="sidebar-search" action="/search/" role="search"><label class="sr-only" for="sidebar-query">サイト内を検索</label><input id="sidebar-query" name="q" type="search" placeholder="検索する…" /><button type="submit" aria-label="検索"><Icon name="search" size={17} /></button></form>
-          <nav class="sidebar-section" aria-label="サイトのページ"><h2>Links</h2><ul class="utility-list"><li><a href="/works/">すべての作品</a></li><li><a href="/creative/">創作</a></li><li><a href="/literature/">文学</a></li><li><a href="/now/">/now</a></li><li><a href="/about/">このサイトについて</a></li><li><a href="/rss.xml"><Icon name="rss" size={15} /> RSS</a></li></ul></nav>
-          <section class="sidebar-section tags-section"><h2>#tags</h2><div class="tag-cloud">{tags.map(tag => <a href={`/search/?q=${encodeURIComponent(tag)}`}>#{tag}</a>)}</div></section>
-          <a class="web-badge" href="/rss.xml"><span>RSS</span><span>SUBSCRIBE ↗</span></a>
-        </aside>
-      </div>
-      <footer class="site-footer"><small>© {new Date().getFullYear()} ものづくり広場</small><div><a href="/rss.xml">RSS</a><span aria-hidden="true">/</span><a href="#main">↑ top</a></div></footer>
+      <main id="main"><slot /></main>
+      <footer class="site-footer hg-footer"><small>© {new Date().getFullYear()} ものづくり広場</small><div><a href="/search/">検索</a><a href="/works/">全作品</a><a href="/creative/">創作</a><a href="/literature/">文学</a><a href="/now/">/now</a><a href="/about/">このサイトについて</a><a href="/rss.xml">RSS</a><span aria-hidden="true">/</span><a href="#main">↑ top</a></div></footer>
     </div>
-    <script>
-      const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
-      function syncTheme() {
-        const night = document.documentElement.dataset.theme === 'night';
-        toggle?.setAttribute('aria-pressed', String(night));
-        toggle?.setAttribute('aria-label', night ? '昼の色に切り替える' : '夜の色に切り替える');
-        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', night ? '#202036' : '#f7f7fb');
-      }
-      syncTheme();
-      toggle?.addEventListener('click', () => {
-        const next = document.documentElement.dataset.theme === 'night' ? 'day' : 'night';
-        document.documentElement.dataset.theme = next;
-        try { localStorage.setItem('hiroba-theme', next); } catch {}
-        syncTheme();
-      });
-    </script>
+
   </body>
 </html>

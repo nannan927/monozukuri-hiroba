@@ -1,0 +1,15 @@
+import { hero } from './editorial-hero.ts';
+type Post = {slug:string;title:string;date:string;category:string;cover?:string;coverAlt?:string};
+type Link = {title:string;url:string};
+const esc=(s:string='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+export function renderHome(posts:Post[],links:Record<string,Link[]>,categories:readonly {id:string;name:string}[]) {
+ const list=(items:Post[])=>items.map(p=>`<a class="hg-post" href="/works/${esc(p.slug)}/"><span><h3>${esc(p.title)}</h3><time datetime="${esc(p.date)}">${esc(p.date.replaceAll('-','.'))}</time></span><span class="hg-arrow" aria-hidden="true">↗</span></a>`).join('');
+ const art=posts.find(p=>p.category==='art'),music=posts.find(p=>p.category==='music');
+ return hero+`<div class="hg-ledger"><span>最近の更新</span><span class="hg-mono">A PERSONAL ARCHIVE</span><a href="/works/">全${posts.length}件 ↗</a></div>
+ <section class="hg-writing"><aside><div class="hg-section-label"><span class="hg-mono">01</span><h2>文章</h2></div><p class="hg-mono">NOTES &amp; ESSAYS</p></aside><div>${list(posts.filter(p=>p.category==='writing').slice(0,3))}<a class="hg-small-link" href="/writing/">文章の一覧 →</a></div></section>
+ ${art?`<section class="hg-feature"><div class="hg-art-frame"><div class="hg-art-toolbar hg-mono"><span>02 / ART</span><span>絵画</span><span aria-hidden="true">＋</span></div>${art.cover?`<a href="/works/${esc(art.slug)}/"><img src="${esc(art.cover)}" alt="${esc(art.coverAlt||art.title)}" width="1200" height="800" loading="lazy"></a>`:''}<p class="hg-image-caption hg-mono">ART / ${esc(art.date)}</p></div><div class="hg-note"><p class="hg-mono">絵画</p><h2>${esc(art.title)}</h2><a class="hg-small-link" href="/works/${esc(art.slug)}/">作品を見る ↗</a></div></section>`:''}
+ ${music?`<section class="hg-music"><div class="hg-music-art" aria-hidden="true"><span class="hg-music-glyph">ƒ</span><div class="hg-staff"><span></span><span></span><span></span><span></span><span></span></div><span class="hg-mono">SOUND &amp; MUSIC</span></div><div class="hg-music-copy"><span class="hg-mono">03 / MUSIC</span><h2>${esc(music.title)}</h2><p>${esc(music.date.replaceAll('-','.'))}</p><a class="hg-small-link" href="/works/${esc(music.slug)}/">作品を見る ↗</a></div></section>`:''}
+ <section class="hg-writing"><aside><div class="hg-section-label"><h2>新しい投稿</h2></div><p class="hg-mono">LATEST ENTRIES</p></aside><div>${list(posts.slice(0,5))}</div></section>
+ <section class="hg-directory"><div class="hg-directory-head"><h2>広場の目次</h2><span class="hg-mono">INDEX / 07</span></div><nav class="hg-index directory-list" aria-label="分野別の一覧">${categories.map((c,i)=>`<a href="/${c.id}/"><span class="hg-mono">${String(i+1).padStart(2,'0')}</span>${c.name}<small>${posts.filter(p=>p.category===c.id).length}件</small><span class="hg-arrow" aria-hidden="true">↗</span></a>`).join('')}</nav></section>
+ <div class="hg-external"><p>Elsewhere.</p><div>${[...(links.development||[]),...(links.creative||[])].map(l=>`<a href="${esc(l.url)}" rel="noopener">${esc(l.title)} ↗</a>`).join('')}</div></div>`;
+}

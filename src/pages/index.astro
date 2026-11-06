@@ -1,25 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Icon from '../components/Icon.astro';
-import PostList from '../components/PostList.astro';
-import { categories, getWorks } from '../lib/content';
-import { externalLinks } from '../data/external-links';
-const works = await getWorks();
-const writing = works.filter(work => work.data.category === 'writing');
-const workPosts = works.filter(work => work.data.category === 'work');
-const videos = works.filter(work => work.data.category === 'video');
-const latestArt = works.find(work => work.data.category === 'art');
-const music = works.filter(work => work.data.category === 'music');
+import {getWorks,categories} from '../lib/content';
+import {externalLinks} from '../data/external-links';
+import {renderHome} from '../lib/editorial-home';
+const posts=(await getWorks()).map(p=>({...p.data,slug:p.id,date:p.data.date.toISOString().slice(0,10)}));
 ---
-<Layout>
-  <header class="home-heading"><h1>最近の更新<span class="cursor" aria-hidden="true">_</span></h1><a class="sample-label" href="/works/">全{works.length}件 →</a></header>
-  <div class="updates-grid">
-    <section class="update-column" aria-labelledby="writing-heading"><h2 id="writing-heading"><a href="/writing/">文章</a><Icon name="pen" size={22} /></h2><PostList works={writing.slice(0, 5)} /><a class="section-more" href="/writing/">文章の一覧 →</a></section>
-    <section class="update-column" aria-labelledby="work-heading"><h2 id="work-heading"><a href="/work/">仕事</a><Icon name="briefcase" size={23} /></h2><PostList works={workPosts.slice(0, 4)} /><ul class="external-links compact">{externalLinks.work.map(link => <li><a href={link.url}>{link.title} ↗</a></li>)}</ul><a class="section-more" href="/work/">仕事の一覧 →</a><div class="subsection"><h2><a href="/video/">映像</a><Icon name="video" size={23} /></h2><PostList works={videos.slice(0, 3)} /><a class="section-more" href="/video/">映像の一覧 →</a></div></section>
-    <section class="update-column" aria-labelledby="development-heading"><h2 id="development-heading"><a href="/development/">開発</a><Icon name="code" size={24} /></h2><ul class="external-links">{externalLinks.development.map(link => <li><a href={link.url}>{link.title} ↗</a><span>nannan927</span></li>)}</ul>{latestArt && <div class="subsection"><h2><a href="/art/">絵画</a><Icon name="palette" size={23} /></h2><a class="painting-preview" href={`/works/${latestArt.id}/`}>{latestArt.data.cover && <img src={latestArt.data.cover} alt={latestArt.data.coverAlt || latestArt.data.title} width="1200" height="800" loading="lazy" />}</a><PostList works={[latestArt]} /></div>}{music.length > 0 && <div class="subsection"><h2><a href="/music/">音楽</a><Icon name="music" size={23} /></h2><PostList works={music.slice(0, 3)} /><a class="section-more" href="/music/">音楽の一覧 →</a></div>}<div class="subsection"><h2><a href="/creative/">創作</a><Icon name="book" size={23} /></h2><ul class="external-links">{externalLinks.creative.map(link => <li><a href={link.url}>{link.title} ↗</a></li>)}</ul></div><a class="section-more" href="/creative/">創作のページ →</a></section>
-  </div>
-  <div class="lower-grid">
-    <section aria-labelledby="archive-heading"><h2 id="archive-heading">アーカイブ<Icon name="book" size={24} /></h2><nav class="archive-links" aria-label="作品の分野">{categories.map(c => <a href={`/${c.id}/`}>{c.name}<span>{works.filter(work => work.data.category === c.id).length}</span></a>)}</nav><a class="section-more" href="/literature/">文学 →</a></section>
-    <section aria-labelledby="log-heading"><h2 id="log-heading">更新履歴<span class="mono-mark" aria-hidden="true">&lt;/&gt;</span></h2><ul class="change-list"><li><time datetime="2026-11-05">2026.11.05</time><p>音楽に「午後の余白」を追加。</p></li><li><time datetime="2026-11-05">2026.11.05</time><p>絵画に「秋の余白」を追加。</p></li><li><time datetime="2026-11-05">2026.11.05</time><p>tomooooo.comの記事とリンクを移行。</p></li><li><time datetime="2026-11-05">2026.11.05</time><p>仕事・開発・創作・文学のページを追加。</p></li></ul><a class="section-more" href="/now/">/now →</a></section>
-  </div>
-</Layout>
+<Layout><Fragment set:html={renderHome(posts,externalLinks,categories)} /></Layout>
