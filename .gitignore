@@ -11,3 +11,6 @@ dist/
 
 .admin-private/
 cms/generated/
+
+.dev.vars
+.dev.vars.*

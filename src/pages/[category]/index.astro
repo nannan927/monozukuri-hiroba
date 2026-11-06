@@ -7,7 +7,7 @@ import { externalLinks } from '../../data/external-links';
 export function getStaticPaths() { return categories.map(category => ({ params: { category: category.id }, props: { category } })); }
 const { category } = Astro.props;
 const works = (await getWorks()).filter(work => work.data.category === category.id);
-const links = category.id === 'development' ? externalLinks.development : category.id === 'diary' ? externalLinks.diary : [];
+const links = category.id === 'development' ? externalLinks.development : category.id === 'work' ? externalLinks.work : [];
 ---
 <Layout title={category.name} description={category.description}>
   <header class="page-intro"><div class="breadcrumb"><a href="/">ホーム</a><span>/</span><span>{category.name}</span></div><p class="page-kicker">{category.english}</p><h1><Icon name={category.icon} size={37} />{category.name}</h1></header>

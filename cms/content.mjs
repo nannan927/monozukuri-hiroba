@@ -3,9 +3,15 @@ import sanitizeHtml from 'sanitize-html';
 
 export class InputError extends Error {}
 export const categories = [
- ['writing','文章','WORDS'],['diary','日記','DIARY'],['art','絵画','ART'],
- ['music','音楽','MUSIC'],['study','学問','STUDY'],['development','開発','DEVELOPMENT']
+ ['writing','文章','WORDS'],['work','仕事','WORK'],['art','絵画','ART'],
+ ['music','音楽','MUSIC'],['video','映像','VIDEO'],['research','研究','RESEARCH'],['development','開発','DEVELOPMENT']
 ];
+// Read old revisions and rows during deployment without restoring retired categories.
+export function normalizeLegacyPost(post) {
+ if(post.category==='diary')return {...post,category:post.slug==='2024-01-10-sea-on-the-map'?'writing':'work',tags:post.slug==='2024-01-10-sea-on-the-map'?post.tags.filter(t=>t!=='日記'):post.tags};
+ if(post.category==='study')return {...post,category:'research'};
+ return post;
+}
 export const esc = (value='') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const categoryName = id => categories.find(c=>c[0]===id)?.[1] || '';
 export const safeUrl = value => !value || (/^\/(?!\/)/.test(value) && !/[\\\s\x00-\x1f]/.test(value)) || /^https:\/\/[^\s\\]+$/i.test(value);
@@ -36,5 +42,5 @@ export function validatePost(input, existing) {
  for(const key of ['source','sourceOrder','sourceCategory','sketch','sonicPi','emptySource']) if(existing?.[key]!==undefined)retained[key]=existing[key];
  return {...retained,slug,title,description,category,date,status:input.status,tags:[...new Set(input.tags.map(t=>t.trim()).filter(Boolean))],cover,coverAlt,audio,duration,body:input.body,html:markdown(input.body)};
 }
-export const fromRow = row => ({...JSON.parse(row.document),slug:row.slug,status:row.status,version:row.version,updatedAt:row.updated_at});
+export const fromRow = row => normalizeLegacyPost({...JSON.parse(row.document),slug:row.slug,category:row.category,status:row.status,version:row.version,updatedAt:row.updated_at});
 export const sortPosts = posts => posts.sort((a,b)=>b.date.localeCompare(a.date)||(a.sourceOrder??999999)-(b.sourceOrder??999999)||a.slug.localeCompare(b.slug));

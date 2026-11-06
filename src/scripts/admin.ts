@@ -3,7 +3,7 @@ const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(
 const form=$<HTMLFormElement>('post-form'), login=$<HTMLFormElement>('login-form');
 const field=(name:string)=>form.elements.namedItem(name) as HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement;
 let csrf='',configured=true,posts:Post[]=[],current:Post|null=null,dirty=false,busy=false;
-const names:Record<string,string>={writing:'文章',diary:'日記',art:'絵画',music:'音楽',study:'学問',development:'開発'};
+const names:Record<string,string>={writing:'文章',work:'仕事',art:'絵画',music:'音楽',video:'映像',research:'研究',development:'開発'};
 const states={draft:'下書き',published:'公開中',trash:'ごみ箱'};
 const notice=(text:string,error=false)=>{$('notice').textContent=text;$('notice').dataset.error=String(error);};
 const saved=(text:string,error=false)=>{$('save-status').textContent=text;$('save-status').dataset.error=String(error);};

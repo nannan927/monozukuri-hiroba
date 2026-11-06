@@ -9,7 +9,7 @@ assert.equal((await call('/admin/')).status,200);
 assert.equal((await call('/api/admin/posts')).status,401);
 const setup=await call('/api/admin/setup','POST',{token,password:'local-runtime-password-241'});assert.equal(setup.status,200,await setup.clone().text());cookie=setup.headers.get('set-cookie').split(';')[0];csrf=(await setup.json()).csrf;
 assert.equal((await (await call('/api/admin/posts')).json()).posts.length,38);
-const input={slug:'runtime-test',title:'Runtime test',description:'local only',category:'diary',date:'2026-11-05',tags:[],body:'## 動作確認\n\n**本文**です。',status:'draft',cover:'',coverAlt:'',audio:'',duration:''};
+const input={slug:'runtime-test',title:'Runtime test',description:'local only',category:'work',date:'2026-11-05',tags:[],body:'## 動作確認\n\n**本文**です。',status:'draft',cover:'',coverAlt:'',audio:'',duration:''};
 let r=await call('/api/admin/posts','POST',input);assert.equal(r.status,201,await r.clone().text());let post=(await r.json()).post;
 assert.equal((await call('/works/runtime-test/')).status,404);
 r=await call('/api/admin/preview','POST',post);assert.equal(r.status,200,await r.clone().text());assert.match((await r.json()).html,/<strong>本文<\/strong>/);

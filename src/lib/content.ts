@@ -2,10 +2,11 @@ import { getCollection } from 'astro:content';
 
 export const categories = [
   { id: 'writing', name: '文章', english: 'WORDS', description: '日々のこと、心に留まったこと。', icon: 'pen', color: 'pink' },
-  { id: 'diary', name: '日記', english: 'DIARY', description: '日記。', icon: 'calendar', color: 'blue' },
+  { id: 'work', name: '仕事', english: 'WORK', description: '仕事。', icon: 'briefcase', color: 'blue' },
   { id: 'art', name: '絵画', english: 'ART', description: '言葉にならないものを、色と線に。', icon: 'palette', color: 'yellow' },
   { id: 'music', name: '音楽', english: 'MUSIC', description: '暮らしのすきまに、小さな音を。', icon: 'music', color: 'green' },
-  { id: 'study', name: '学問', english: 'STUDY', description: '「なぜ？」からはじまる探検。', icon: 'book', color: 'blue' },
+  { id: 'video', name: '映像', english: 'VIDEO', description: '映像。', icon: 'video', color: 'pink' },
+  { id: 'research', name: '研究', english: 'RESEARCH', description: '研究。', icon: 'book', color: 'blue' },
   { id: 'development', name: '開発', english: 'DEVELOPMENT', description: '開発・制作物。', icon: 'code', color: 'green' },
 ] as const;
 

@@ -1,6 +1,8 @@
 {
-  "/ブログ/日記/": "/diary/",
-  "/ブログ/日記-1/": "/diary/",
+  "/diary/": "/work/",
+  "/study/": "/research/",
+  "/ブログ/日記/": "/work/",
+  "/ブログ/日記-1/": "/work/",
   "/ブログ/文学/": "/literature/",
   "/創作/": "/creative/",
   "/開発/": "/development/",

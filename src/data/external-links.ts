@@ -1,12 +1,11 @@
-export const externalLinks = {
+type ExternalLink = { title: string; url: string };
+
+export const externalLinks: Record<'creative' | 'development' | 'work', ExternalLink[]> = {
   creative: [
     { title: 'note', url: 'https://note.com/nannan_2' },
-    { title: 'ノベルアップ＋', url: 'https://novelup.plus/user/514612793/profile' },
   ],
   development: [
-    { title: 'GitHub', url: 'https://github.com/sunadatomohiro?tab=repositories' },
+    { title: 'GitHub', url: 'https://github.com/nannan927' },
   ],
-  diary: [
-    { title: 'gooブログ', url: 'https://blog.goo.ne.jp/takuzou5599' },
-  ],
+  work: [],
 };

@@ -6,7 +6,7 @@ import Icon from '../components/Icon.astro';
 import Computer from '../components/Computer.astro';
 import { categories, getWorks } from '../lib/content';
 interface Props { title?: string; description?: string }
-const { title, description = '文章・絵画・音楽・学問の個人サイト。' } = Astro.props;
+const { title, description = '文章・仕事・絵画・音楽・映像・研究・開発の個人サイト。' } = Astro.props;
 const current = Astro.url.pathname;
 const pageTitle = title ? `${title} | ものづくり広場` : 'ものづくり広場';
 const works = await getWorks();

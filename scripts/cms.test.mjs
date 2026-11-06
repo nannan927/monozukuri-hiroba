@@ -20,7 +20,7 @@ async function fixture(){
  async function login(){const r=await request('/api/admin/setup','POST',{token,password:'test-password-very-long-241'});assert.equal(r.status,200,await r.clone().text());authCookie=r.headers.get('set-cookie').split(';')[0];csrf=(await r.json()).csrf;return authCookie;}
  return {DB,request,login,token,close:()=>DB.db.close()};
 }
-const sample=()=>({slug:'new-test-post',title:'秘密タイトル241',description:'説明',category:'diary',date:'2026-11-05',tags:['秘密タグ241'],body:'## 本文\n\nテストの本文です。',cover:'',coverAlt:'',audio:'',duration:'',status:'draft'});
+const sample=()=>({slug:'new-test-post',title:'秘密タイトル241',description:'説明',category:'work',date:'2026-11-05',tags:['秘密タグ241'],body:'## 本文\n\nテストの本文です。',cover:'',coverAlt:'',audio:'',duration:'',status:'draft'});
 
 test('owner setup, session, CSRF and logout guard every admin write',async()=>{
  const f=await fixture();try{
@@ -42,10 +42,10 @@ test('owner setup, session, CSRF and logout guard every admin write',async()=>{
 test('draft, publish, edit conflict, revisions, trash and restore reach public pages atomically',async()=>{
  const f=await fixture();try{
   await f.login();let post=(await (await f.request('/api/admin/posts','POST',sample())).json()).post;
-  for(const path of ['/','/diary/','/works/','/search/?q=秘密','/rss.xml'])assert.ok(!(await (await f.request(path)).text()).includes(post.title),path);
+  for(const path of ['/','/work/','/works/','/search/?q=秘密','/rss.xml'])assert.ok(!(await (await f.request(path)).text()).includes(post.title),path);
   assert.equal((await f.request('/works/'+post.slug+'/')).status,404);
   post=(await (await f.request('/api/admin/posts/'+post.slug,'PUT',{...post,status:'published'})).json()).post;
-  for(const path of ['/','/diary/','/works/','/search/?q=秘密','/rss.xml'])assert.ok((await (await f.request(path)).text()).includes(post.title),path);
+  for(const path of ['/','/work/','/works/','/search/?q=秘密','/rss.xml'])assert.ok((await (await f.request(path)).text()).includes(post.title),path);
   const old={...post};post=(await (await f.request('/api/admin/posts/'+post.slug,'PUT',{...post,title:'編集後のタイトル'})).json()).post;
   assert.equal((await f.request('/api/admin/posts/'+post.slug,'PUT',old)).status,409);
   const history=await (await f.request('/api/admin/posts/'+post.slug+'/revisions')).json();assert.equal(history.revisions.length,2);
@@ -76,6 +76,71 @@ test('input validation and Markdown block stored XSS and invalid publication URL
  assert.throws(()=>validatePost({...sample(),date:'2026-02-30'}));
  assert.throws(()=>validatePost({...sample(),status:'scheduled'}));
  const p=validatePost({...sample(),sketch:'autumn-dusk'});assert.equal(p.sketch,undefined);
+});
+
+test('work, video and research can be published, filtered and chosen in the admin',async()=>{
+ const f=await fixture();try{
+  await f.login();
+  const choices=[['work','仕事'],['video','映像'],['research','研究']];
+  const admin=load(readFileSync('dist/admin/index.html','utf8'));
+  const homepage=load(await (await f.request('/')).text());
+  for(const [category,label] of choices){
+   assert.equal(admin(`select[name="category"] option[value="${category}"]`).text(),label);
+   assert.equal(homepage(`.main-nav a[href="/${category}/"]`).text(),label);
+   assert.ok(homepage(`.directory-list a[href="/${category}/"]`).text().includes(label));
+   const input={...sample(),slug:`category-${category}`,title:`${label}の公開テスト`,category,status:'published'};
+   const created=await f.request('/api/admin/posts','POST',input);assert.equal(created.status,201,await created.clone().text());
+   const listing=await f.request(`/${category}/`);assert.equal(listing.status,200);
+   const $=load(await listing.text());assert.equal($('h1').text(),label);assert.ok($('.work-card').text().includes(input.title));
+   const filtered=load(await (await f.request(`/works/?category=${category}`)).text());
+   assert.equal(filtered('.work-card').length,1);assert.ok(filtered('.work-card').text().includes(input.title));
+   const detail=load(await (await f.request(`/works/${input.slug}/`)).text());assert.equal(detail('.category-label').text(),label);
+  }
+  for(const retired of ['diary','study']){
+   assert.equal(admin(`select[name="category"] option[value="${retired}"]`).length,0);
+   assert.equal(homepage(`.main-nav a[href="/${retired}/"]`).length,0);
+   assert.equal((await f.request('/api/admin/posts','POST',{...sample(),slug:`retired-${retired}`,category:retired})).status,400);
+  }
+  const sea='/works/2024-01-10-sea-on-the-map/';
+  const article=load(await (await f.request(sea)).text());assert.equal(article('.category-label').text(),'文章');
+  assert.ok(load(await (await f.request('/writing/')).text())(`.work-card a[href="${sea}"]`).length);
+  assert.equal(load(await (await f.request('/work/')).text())(`.work-card a[href="${sea}"]`).length,0);
+  for(const [old,next] of [['/diary/','/work/'],['/study/','/research/']]){
+   const response=await f.request(old);assert.equal(response.status,301);assert.equal(response.headers.get('location'),origin+next);
+  }
+ }finally{f.close();}
+});
+
+test('category migration preserves content and history, rejects stale edits and is repeatable',async()=>{
+ const f=await fixture();try{
+  await f.login();
+  const db=f.DB.db,sea='2024-01-10-sea-on-the-map';
+  db.prepare("UPDATE posts SET category='diary',document=json_set(document,'$.category','diary','$.tags',json(?)) WHERE slug=?").run('["日記","残すタグ"]',sea);
+  for(const [category,status] of [['diary','draft'],['study','trash']]){
+   const document={...sample(),slug:`legacy-${category}`,title:`保存済みの${category}`,category,status,html:'<p>編集済みの本文</p>',body:'編集済みの本文'};
+   db.prepare('INSERT INTO posts(slug,title,category,date,status,document,version,updated_at) VALUES(?,?,?,?,?,?,7,?)').run(document.slug,document.title,category,document.date,status,JSON.stringify(document),'before-migration');
+  }
+  const old=db.prepare('SELECT * FROM posts ORDER BY slug').all();
+  const sql=readFileSync('migrations/0002_categories.sql','utf8');db.exec(sql);
+  const migrated=db.prepare('SELECT * FROM posts ORDER BY slug').all();assert.equal(migrated.length,old.length);
+  for(let i=0;i<old.length;i++){
+   const before=old[i],after=migrated[i],a=JSON.parse(before.document),b=JSON.parse(after.document);
+   if(!['diary','study'].includes(before.category)){assert.deepEqual(after,before);continue;}
+   const expected=before.slug===sea?'writing':before.category==='diary'?'work':'research';
+   assert.equal(after.category,expected);assert.equal(b.category,expected);assert.equal(after.version,before.version+1);assert.equal(after.status,before.status);
+   assert.deepEqual(b,{...a,category:expected,tags:before.slug===sea?['残すタグ']:a.tags});
+   const revision=db.prepare('SELECT document,status FROM revisions WHERE slug=? AND version=?').get(before.slug,before.version);
+   assert.equal(revision.document,before.document);assert.equal(revision.status,before.status);
+   const history=(await (await f.request(`/api/admin/posts/${before.slug}/revisions`)).json()).revisions;
+   assert.equal(history[0].category,expected);assert.equal(history[0].body,a.body);
+   assert.equal((await f.request(`/api/admin/posts/${before.slug}`,'PUT',{...history[0],version:before.version})).status,409);
+  }
+  const historyCount=db.prepare('SELECT COUNT(*) n FROM revisions').get().n;
+  db.exec(sql);assert.deepEqual(db.prepare('SELECT * FROM posts ORDER BY slug').all(),migrated);assert.equal(db.prepare('SELECT COUNT(*) n FROM revisions').get().n,historyCount);
+  const latest=(await (await f.request(`/api/admin/posts/${sea}`)).json()).post;
+  const historical=(await (await f.request(`/api/admin/posts/${sea}/revisions`)).json()).revisions[0];
+  assert.equal((await f.request(`/api/admin/posts/${sea}`,'PUT',{...latest,...historical,version:latest.version})).status,200);
+ }finally{f.close();}
 });
 
 test('login throttling and expired setup prevent guessing',async()=>{

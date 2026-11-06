@@ -2,7 +2,7 @@
 
 Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは変更しません。公開手順は [CLOUDFLARE.md](CLOUDFLARE.md) を参照してください。
 
-文章・日記・絵画・音楽・学問・開発をまとめる、Astro製の静的な個人サイトです。青紫の文字、レトロPCのイラスト、サイドバーと点線区切りの記事一覧を使っています。
+文章・仕事・絵画・音楽・映像・研究・開発をまとめる、AstroとCloudflare D1による個人サイトです。青紫の文字、レトロPCのイラスト、サイドバーと点線区切りの記事一覧を使っています。
 
 ## 投稿・編集
 
@@ -28,9 +28,9 @@ npm run build
 npm run preview
 ```
 
-ビルド結果は `dist/`。Astroの静的出力なので、任意の静的ホスティングにも配置できます。ドメインを変更したときは `astro.config.mjs` の `site` も更新してください。
+ビルド結果は `dist/`。静的アセットとPages Workerを含み、公開ページ・管理APIにはCloudflare D1のバインドが必要です。ドメインを変更したときは `astro.config.mjs` の `site` も更新してください。
 
-## 作品を追加する
+## 開発用の作品データ
 
 `src/content/works/` にMarkdownファイルを追加します。ファイル名がURLになります。例：`my-first-work.md` → `/works/my-first-work/`。
 
@@ -48,7 +48,7 @@ draft: false
 ここに本文を書きます。
 ```
 
-- `category`: `writing`（文章）、`diary`（日記）、`art`（絵画）、`music`（音楽）、`study`（学問）、`development`（開発）。
+- `category`: `writing`（文章）、`work`（仕事）、`art`（絵画）、`music`（音楽）、`video`（映像）、`research`（研究）、`development`（開発）。
 - `cover`: 絵や写真のパス。例 `/images/my-art.jpg`。画像は `public/images/` へ。
 - `coverAlt`: 画像の内容を説明する日本語。画像を入れる場合に設定してください。
 - `audio`: 音源のパス。例 `/audio/my-song.mp3`。音源は `public/audio/` へ。
@@ -56,7 +56,7 @@ draft: false
 - `sample: true`: 見本表示を付けます。実際の作品は `false` に。
 - `draft: true`: ビルド時に一覧・詳細・検索・RSSから除外します。
 
-追加した内容は、再ビルドすると各カテゴリ、検索、RSSに反映されます。トップページには各分野の新しい作品を表示します。
+Markdownの変更は開発用プレビューと初期投入用データに反映されます。本番の投稿は管理画面で更新してください。通常の再ビルド・デプロイはD1の投稿を上書きしません。
 
 ## 動く絵画「秋の余白」
 
@@ -87,13 +87,13 @@ draft: false
 
 ## 含まれる機能
 
-カテゴリ別一覧、作品詳細、種類による絞り込み、日本語全文検索（ブラウザー内）、ネイティブ音声プレイヤー、昼夜の配色切り替え、RSS、404ページ、レスポンシブ表示。配色の選択のみブラウザーのlocalStorageに保存します。アクセス解析や外部フォントへの通信はありません。
+カテゴリ別一覧、作品詳細、種類による絞り込み、日本語全文検索、ネイティブ音声プレイヤー、昼夜の配色切り替え、RSS、404ページ、レスポンシブ表示。配色の選択のみブラウザーのlocalStorageに保存します。アクセス解析や外部フォントへの通信はありません。
 
 ## 移行済みの内容
 
 現在は tomooooo.com の記事36件を掲載しています。旧サイトのタイトル・日付・本文・分類を保持し、初期見本は `archive/sample-works/` に退避しました。
 
-日記・開発・創作・文学のページもあります。外部サービスへのリンクは `src/data/external-links.ts` で管理します。移行の範囲と検証方法は [移行記録](migration/README.md)、各記事の対応表は `migration/tomooooo.json` を参照してください。
+仕事・映像・研究・開発・創作・文学のページもあります。外部サービスへのリンクは `src/data/external-links.ts` で管理します。移行の範囲と検証方法は [移行記録](migration/README.md)、各記事の対応表は `migration/tomooooo.json` を参照してください。
 
 新しい記事には `source` などの移行用情報は不要です。既存記事の `source` は元URL、`sourceCategory` は元の分類、`sourceOrder` は同日の並び順を示します。
 
@@ -104,3 +104,7 @@ PC・カセットなどのSVGはこのサイト向けのオリジナル素材で
 Cloudflare Pagesの無料サブドメインで公開します。公開URLは https://monozukuri-hiroba-tomo.pages.dev/ です。設定済みなので `npm run deploy` で更新できます。公開URLを変更するときだけ `SITE_URL` で上書きします。
 
 元の改訂版は `../monozukuri-hiroba-geek/`、初版は `../monozukuri-hiroba/` に保持しています。このコピーにはSitesのプロジェクトIDを含めていません。
+
+## GitHubで管理する範囲
+
+サイトのソースコード、画像などの公開素材、依存関係、DBスキーマ・移行処理を管理します。管理画面のパスワード、認証トークン、初期設定リンク、ローカルDB、生成物は含めません。本番の投稿と保存履歴はD1にあるため、GitHubのコード保存とは別に管理画面から書き出してください。

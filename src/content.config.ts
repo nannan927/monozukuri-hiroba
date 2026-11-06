@@ -7,7 +7,7 @@ const works = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    category: z.enum(['writing', 'diary', 'art', 'music', 'study', 'development']),
+    category: z.enum(['writing', 'work', 'art', 'music', 'video', 'research', 'development']),
     date: z.coerce.date(),
     tags: z.array(z.string()).default([]),
     cover: z.string().optional(),

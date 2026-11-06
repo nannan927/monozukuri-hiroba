@@ -1,6 +1,6 @@
 import templates from './generated/templates.json' with { type: 'json' };
 import redirects from '../src/data/legacy-redirects.json' with { type: 'json' };
-import {validatePost,fromRow,sortPosts,InputError} from './content.mjs';
+import {validatePost,fromRow,sortPosts,InputError,normalizeLegacyPost} from './content.mjs';
 import {session,newSession,cookie,digest,equal,passwordHash,validPassword,randomToken,rateLimit} from './auth.mjs';
 import {publicPage,rss,article,shell} from './render.mjs';
 
@@ -69,7 +69,7 @@ async function api(request,env,url){
  const match=path.match(/^\/api\/admin\/posts\/([a-z0-9-]+)(\/revisions)?$/);
  if(match&&method==='GET'){
   const row=await getPost(db,match[1]);if(!row)return json({error:'投稿が見つかりません。'},404);
-  if(match[2])return json({revisions:(await db.prepare('SELECT version,document,status,saved_at FROM revisions WHERE slug=? ORDER BY version DESC LIMIT 30').bind(match[1]).all()).results.map(r=>({...JSON.parse(r.document),version:r.version,status:r.status,savedAt:r.saved_at}))});
+  if(match[2])return json({revisions:(await db.prepare('SELECT version,document,status,saved_at FROM revisions WHERE slug=? ORDER BY version DESC LIMIT 30').bind(match[1]).all()).results.map(r=>({...normalizeLegacyPost({...JSON.parse(r.document),slug:match[1]}),version:r.version,status:r.status,savedAt:r.saved_at}))});
   return json({post:fromRow(row)});
  }
  if(path==='/api/admin/preview'&&method==='POST'){
@@ -115,10 +115,17 @@ export default {
    }
    if(path.startsWith('/admin/')||path.startsWith('/_cms')||path.startsWith('/.'))return new Response('Not Found',{status:404});
    if(path.startsWith('/_astro/')||path.startsWith('/images/')||path.startsWith('/audio/')||path.startsWith('/artworks/')||path.startsWith('/music/afternoon-space/')||path==='/favicon.svg')return env.ASSETS.fetch(request);
-   if(redirects[path])return Response.redirect(url.origin+encodeURI(redirects[path]),301);
+   if(redirects[path])return Response.redirect(url.origin+encodeURI(redirects[path])+url.search,301);
    if(path.endsWith('/index.html'))return Response.redirect(url.origin+encodeURI(path.slice(0,-10))+url.search,301);
    if(path.endsWith('.html')&&path!=='/404.html')return Response.redirect(url.origin+encodeURI(path.slice(0,-5))+'/'+url.search,301);
    if(!path.endsWith('/')&&!path.includes('.'))return Response.redirect(url.origin+encodeURI(path)+'/'+url.search,301);
+   if(path==='/works/'){
+    const filter=url.searchParams.get('category');
+    if(filter==='diary'||filter==='study'){
+     url.searchParams.set('category',filter==='diary'?'work':'research');
+     return Response.redirect(url.href,301);
+    }
+   }
    if(!env.DB)return html('<h1>ただいま準備中です</h1><p>しばらくしてからお試しください。</p>',503);
    const posts=await published(env.DB);
    if(path==='/rss.xml')return new Response(request.method==='HEAD'?null:rss(posts,url.origin),{headers:{'Content-Type':'application/rss+xml; charset=utf-8','Cache-Control':'no-store'}});

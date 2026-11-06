@@ -8,6 +8,6 @@ import { categories } from '../lib/content';
   <article class="article-wrap">
     <div class="breadcrumb"><a href="/">ホーム</a><span>/</span><span>about</span></div>
     <div class="about-heading"><Computer size={90} /><h1>このサイトについて</h1></div>
-    <div class="article-body"><p>ものづくり広場は、文章・日記・創作・学問・開発をまとめる個人サイトです。</p><div class="about-categories">{categories.map(c => <a href={`/${c.id}/`}><Icon name={c.icon} size={21} />{c.name}</a>)}</div><p><a href="https://www.tomooooo.com/">tomooooo.com</a>の記事を引き継いでいます。</p><p><a href="/now/">近況</a> · <a href="/works/">作品一覧</a> · <a href="/rss.xml">RSS</a></p></div>
+    <div class="article-body"><p>ものづくり広場は、文章・仕事・絵画・音楽・映像・研究・開発をまとめる個人サイトです。</p><div class="about-categories">{categories.map(c => <a href={`/${c.id}/`}><Icon name={c.icon} size={21} />{c.name}</a>)}</div><p><a href="https://www.tomooooo.com/">tomooooo.com</a>の記事を引き継いでいます。</p><p><a href="/now/">近況</a> · <a href="/works/">作品一覧</a> · <a href="/rss.xml">RSS</a></p></div>
   </article>
 </Layout>

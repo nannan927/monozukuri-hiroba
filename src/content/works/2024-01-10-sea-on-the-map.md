@@ -1,9 +1,9 @@
 ---
 title: "地図上の海"
 description: "その日、自然があった。人があった。 ワイパーが動いた。人はもっとたくさん動いた。 『perfect days』の役所広司のようにカセットをかけて運転できるわけでもなく、CDをかけて走る。 リーコニッツは爽やかな西海岸のジャズだ。 演奏ももち"
-category: "diary"
+category: "writing"
 date: "2024-01-10"
-tags: ["日記"]
+tags: []
 source: "https://www.tomooooo.com/2024/01/10/%E5%9C%B0%E5%9B%B3%E4%B8%8A%E3%81%AE%E6%B5%B7/"
 sourceOrder: 7
 sourceCategory: "日記"

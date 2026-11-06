@@ -25,10 +25,10 @@ import '@fontsource/zen-maru-gothic/500.css';
      <form id="post-form" hidden>
       <div class="editor-heading"><h2 id="editor-title">新しい投稿</h2><span id="post-state"></span><a id="public-link" target="_blank" rel="noopener" hidden>公開ページ ↗</a></div>
       <label>タイトル<input name="title" required maxlength="160"/></label>
-      <div class="field-pair"><label>分野<select name="category"><option value="writing">文章</option><option value="diary">日記</option><option value="art">絵画</option><option value="music">音楽</option><option value="study">学問</option><option value="development">開発</option></select></label><label>日付<input type="date" name="date" required/></label></div>
+      <div class="field-pair"><label>分野<select name="category"><option value="writing">文章</option><option value="work">仕事</option><option value="art">絵画</option><option value="music">音楽</option><option value="video">映像</option><option value="research">研究</option><option value="development">開発</option></select></label><label>日付<input type="date" name="date" required/></label></div>
       <label>URLの名前<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="100" aria-describedby="slug-help"/><small id="slug-help">半角英小文字・数字・ハイフン。保存後は変更できません。</small></label>
       <label>短い説明<textarea name="description" rows="2" maxlength="500"></textarea></label>
-      <label>タグ<input name="tags" placeholder="日記, 読書"/><small>カンマで区切ります。</small></label>
+      <label>タグ<input name="tags" placeholder="読書, 制作"/><small>カンマで区切ります。</small></label>
       <label>本文<textarea class="body-input" name="body" rows="20" spellcheck="false" maxlength="200000" placeholder="ここに本文を書きます。Markdownも使えます。"></textarea></label>
       <details class="format-help"><summary>Markdownの書き方</summary><p><code>## 見出し</code> ／ <code>**太字**</code> ／ <code>[リンク名](https://...)</code><br/><code>![画像の説明](https://...)</code> ／ 空行で段落を区切ります。</p></details>
       <details><summary>画像・音源</summary><label>表紙画像のURL<input name="cover" type="text" placeholder="https://... または /images/..."/></label><label>画像の説明<input name="coverAlt" maxlength="300"/></label><label>音源のURL<input name="audio" type="text" placeholder="https://... または /audio/..."/></label><label>再生時間<input name="duration" maxlength="40" placeholder="3:24"/></label><p class="hint">画像や音源は、公開済みのファイルURLを指定できます。</p></details>

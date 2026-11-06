@@ -12,7 +12,6 @@ homepage('.main-nav [aria-current]').removeAttr('aria-current');
 homepage('.main-nav .active').removeClass('active');
 homepage('.directory-list a').each((_,el)=>{const a=homepage(el),id=a.attr('href').split('/')[1];a.find('small').attr('data-count-for',id);});
 homepage('.tag-cloud').text('__CMS_TAGS__');
-homepage('.site-footer > div').append('<span aria-hidden="true">/</span><a href="/admin/">管理</a>');
 const art=load(read('dist/works/autumn-dusk/index.html')),music=load(read('dist/works/afternoon-space/index.html'));
 const included=new Set(homepage('link[href],script[src]').map((_,e)=>homepage(e).attr('href')||homepage(e).attr('src')).get());
 for(const page of [art,music]){
