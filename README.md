@@ -1,5 +1,7 @@
 # ものづくり広場 — Cloudflare公開用
 
+コード管理: [nannan927/monozukuri-hiroba](https://github.com/nannan927/monozukuri-hiroba)（`main` ブランチ）。
+
 Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは変更しません。公開手順は [CLOUDFLARE.md](CLOUDFLARE.md) を参照してください。
 
 文章・仕事・絵画・音楽・映像・研究・開発をまとめる、AstroとCloudflare D1による個人サイトです。青紫の文字と白い余白、大きな明朝体、ベジェ曲線、シアンの作品枠と鮮やかな色面を使ったGlyphs由来のデザインです。
@@ -110,3 +112,5 @@ Cloudflare Pagesの無料サブドメインで公開します。公開URLは htt
 ## GitHubで管理する範囲
 
 サイトのソースコード、画像などの公開素材、依存関係、DBスキーマ・移行処理を管理します。管理画面のパスワード、認証トークン、初期設定リンク、ローカルDB、生成物は含めません。本番の投稿と保存履歴はD1にあるため、GitHubのコード保存とは別に管理画面から書き出してください。
+
+コードの変更は `git add` → `git commit` → `git push` でGitHubに保存します。Cloudflareへの公開は `npm run deploy` で行います。GitHubへpushしただけではサイトは更新されません。
