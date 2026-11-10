@@ -81,6 +81,7 @@ npm run test:federation-runtime
 - 既存39作品を保持して導入。過去作品の配信イベントは作成していません。
 - WebFinger・Actor・フォロー案内・既存ページ・RSSの応答を確認。未署名Followは401、プレビューのActorは404。
 - 別の公開URLに設けた検証用Actorから署名付きFollowを送り、本番Queueを経由して返ったAcceptの署名を検証。Undoによる解除も確認しました。
-- 新作のCreate・修正・取り下げは、workerd/D1/KV/Queueを接続した模擬環境で検証。実在のMastodonアカウントの画面上での表示確認は別途行います。
+- Mastodon・Misskeyで検索・表示できたことをユーザーが確認しました。
+- 新作のCreate・修正・取り下げは、workerd/D1/KV/Queueを接続した模擬環境で検証。両サービスへの実際の新作通知の到着確認は、次の公開時に行います。
 - 配信用Worker版: `ae3c375c-6c30-43ea-9911-a69c0d8adf9d`。5分ごとの回復処理とQueueの受信処理を公開済み。
 - Workers初回設定として `monozukuri-hiroba-tomo.workers.dev` を登録。作品サイトの正式URLは従来のPages URLです。

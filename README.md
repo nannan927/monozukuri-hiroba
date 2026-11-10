@@ -4,6 +4,8 @@
 
 Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは変更しません。公開手順は [CLOUDFLARE.md](CLOUDFLARE.md)、外部からのフォローと新作配信は [FEDERATION.md](FEDERATION.md) を参照してください。
 
+各作者が独立した創作サイトを持ち、ActivityPubでつながる次段階の構想は [設計草案](DESIGN-NEXT.md) にまとめています。万葉プロジェクトの作品集・共同制作・Symbol連携は検討中の案です。
+
 文章・仕事・絵画・音楽・映像・研究・開発をまとめる、AstroとCloudflare D1による個人サイトです。青紫の文字と白い余白、大きな明朝体、ベジェ曲線、シアンの作品枠と鮮やかな色面を使ったGlyphs由来のデザインです。
 
 ## 投稿・編集
