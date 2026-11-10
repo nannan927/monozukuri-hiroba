@@ -1,8 +1,9 @@
 import {buildFederation,deliverPublication,flushPublications,ORIGIN} from './federation.mjs';
 import {WorkersMessageQueue} from '@fedify/cfworkers';
+import {deliverFollowJob,flushFollowJobs} from './federation-reading.mjs';
 
 export default {
- async scheduled(_controller,env){await flushPublications(env);},
+ async scheduled(_controller,env){await flushPublications(env);await flushFollowJobs(env);},
  async queue(batch,env){
   const federation=await buildFederation(env);
   const ctx=federation.createContext(new URL(ORIGIN),env);
@@ -15,6 +16,7 @@ export default {
     if(!processed.shouldProcess){message.retry();continue;}
     const body=processed.message;
     if(body.type==='hiroba:publication')await deliverPublication(ctx,body);
+    else if(body.type==='hiroba:follow')await deliverFollowJob(ctx,body);
     else if(['inbox','outbox','fanout','task'].includes(body.type))await federation.processQueuedTask(env,body);
     else throw new Error('Unknown federation queue message');
     message.ack();

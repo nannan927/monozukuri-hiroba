@@ -1,8 +1,8 @@
 # ものづくり広場 — Cloudflare公開用
 
-コード管理: [nannan927/monozukuri-hiroba](https://github.com/nannan927/monozukuri-hiroba)（`main` ブランチ）。
+コード管理: [nannan927/monozukuri-hiroba](https://github.com/nannan927/monozukuri-hiroba)（基盤は `main`、連合機能は `feat/activitypub-phase-one` ブランチ）。
 
-Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは変更しません。公開手順は [CLOUDFLARE.md](CLOUDFLARE.md)、外部からのフォローと新作配信は [FEDERATION.md](FEDERATION.md) を参照してください。
+Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは変更しません。公開手順は [CLOUDFLARE.md](CLOUDFLARE.md)、外部とのフォローと新作の送受信は [FEDERATION.md](FEDERATION.md) を参照してください。
 
 各作者が独立した創作サイトを持ち、ActivityPubでつながる次段階の構想は [設計草案](DESIGN-NEXT.md) にまとめています。万葉プロジェクトの作品集・共同制作・Symbol連携は検討中の案です。
 

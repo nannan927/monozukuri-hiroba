@@ -19,7 +19,21 @@ import '@fontsource/zen-maru-gothic/500.css';
   <section id="workspace" hidden>
    <div class="admin-toolbar"><h1>投稿一覧</h1><button class="primary" id="new-post">＋ 新しい投稿</button><button id="export-posts">データを書き出す</button><button id="logout">ログアウト</button></div>
    <p id="federation-status" class="hint" hidden></p>
-   <button id="retry-federation" type="button" hidden>届かなかった通知を再送する</button>
+   <button id="retry-federation" type="button" hidden>失敗した通信を再試行する</button>
+   <details id="reading-panel" hidden>
+    <summary>つながる工房・新作を読む</summary>
+    <p class="hint">ものづくり広場から、Mastodon・Misskeyなどのアカウントをフォローできます。受信した投稿とフォロー先の一覧は、管理者だけが閲覧できます。</p>
+    <form id="follow-search-form">
+     <label for="follow-address">フォローするアドレス</label>
+     <div class="follow-search"><input id="follow-address" required maxlength="2048" placeholder="@名前@サーバー または プロフィールURL" autocomplete="off"/><button id="lookup-follow" type="submit">相手を確認</button></div>
+    </form>
+    <p id="reading-notice" role="status" aria-live="polite"></p>
+    <div id="follow-preview" hidden><p id="follow-preview-name"></p><p><a id="follow-preview-link" target="_blank" rel="noopener noreferrer"></a></p><button id="confirm-follow" type="button" class="primary">この相手をフォロー</button></div>
+    <div class="reading-columns">
+     <section><h2>フォロー先</h2><div id="following-list"></div></section>
+     <section><div class="reading-toolbar"><h2>届いた新作</h2><button id="refresh-reading" type="button">更新</button></div><p class="hint">承認後に届く公開投稿を表示します。過去の投稿は取得しません。画像や音楽は「元の投稿を開く」からご覧ください。</p><div id="reading-inbox"></div><button id="more-reading" type="button" hidden>さらに読む</button></section>
+    </div>
+   </details>
    <div class="admin-grid">
     <aside class="post-browser"><label class="sr-only" for="filter-search">投稿を検索</label><input id="filter-search" type="search" placeholder="タイトル・タグで検索"/><label class="sr-only" for="filter-status">公開状態</label><select id="filter-status"><option value="active">ごみ箱以外</option><option value="published">公開中</option><option value="draft">下書き</option><option value="trash">ごみ箱</option><option value="all">すべて</option></select><p id="list-count"></p><div id="post-list"></div></aside>
     <section class="editor-panel">
@@ -61,5 +75,8 @@ import '@fontsource/zen-maru-gothic/500.css';
  details{margin:18px 0;padding-top:12px;border-top:1px dotted var(--line)}summary{cursor:pointer;font-size:13px}.format-help p{font-size:12px;line-height:2}.save-bar{position:sticky;bottom:0;display:flex;gap:10px;flex-wrap:wrap;background:var(--paper);padding:16px 0;border-top:1px solid var(--line);margin-top:24px;z-index:1}#save-status{font-size:13px;min-height:25px;white-space:pre-wrap}.account-settings{max-width:500px;margin-top:40px}.account-settings button,.login-panel button{margin-top:20px}
  dialog{width:min(1000px,95vw);height:90vh;max-height:95vh;border:1px solid var(--line);border-radius:7px;padding:18px;color:var(--ink);background:var(--paper)}dialog::backdrop{background:#20203688}.preview-toolbar{display:flex;justify-content:space-between;align-items:center}dialog p{font-size:12px;margin:10px 0}iframe{width:100%;height:calc(100% - 90px);border:1px solid var(--line);background:var(--white)}
  :global(.admin-post){display:block;text-align:left;width:100%;margin:9px 0;padding:13px 10px;background:var(--paper);border:1px solid var(--line);border-radius:4px;color:var(--ink);cursor:pointer}:global(.admin-post[aria-current='true']){background:var(--paper-alt);border-color:var(--ink)}:global(.admin-post strong){display:block;font-size:14px;line-height:1.7;font-weight:500}:global(.admin-post small){display:block;font-size:11px;margin-top:6px;color:var(--muted)}:global(.history-item){display:block;margin:8px 0}
+ #reading-panel{margin:22px 0 32px;padding-bottom:20px;border-bottom:1px dotted var(--line)}#reading-panel>summary{font-size:17px}#reading-notice{font-size:13px;min-height:24px;margin:12px 0}#reading-notice[data-error='true']{color:#a33151}.follow-search{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.follow-search input{flex:1;min-width:min(100%,260px);margin:0}.reading-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:30px;margin-top:24px}.reading-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}#follow-preview{padding:12px 0;overflow-wrap:anywhere}#follow-preview button{margin-top:10px}
+ :global(.reading-item),:global(.following-item){border-top:1px dotted var(--line);padding:16px 0;overflow-wrap:anywhere}:global(.reading-item h3){font-size:17px;margin:8px 0}:global(.reading-item p){line-height:1.8;margin:8px 0}:global(.reading-body){font-size:14px;line-height:1.9}:global(.reading-body pre){white-space:pre-wrap;overflow-wrap:anywhere}:global(.reading-body ul),:global(.reading-body ol){padding-left:24px}:global(.following-item button){margin-top:8px}
+ @media(max-width:800px){.reading-columns{grid-template-columns:1fr}}
  @media(max-width:800px){.admin-grid{grid-template-columns:1fr}.post-browser{border-right:0;border-bottom:2px dotted var(--line);padding:0 0 20px}#post-list{max-height:240px;overflow:auto}.admin-main{padding:18px 5vw 40px}.admin-header{flex-wrap:wrap;gap:10px}.admin-header>a:first-child{font-size:19px}.field-pair{gap:10px}.login-panel{padding:22px}.save-bar{gap:7px}button{min-height:42px}}
 </style>

@@ -1,13 +1,12 @@
 import {createFederationBuilder} from '@fedify/fedify';
 import {WorkersKvStore,WorkersMessageQueue} from '@fedify/cfworkers';
-import {Accept,Activity,Create,Delete,Endpoints,Follow,Image,Note,Person,PUBLIC_COLLECTION,Tombstone,Undo,Update} from '@fedify/vocab';
+import {Accept,Activity,Create,Delete,Endpoints,Follow,Image,Note,Person,PUBLIC_COLLECTION,Reject,Tombstone,Undo,Update} from '@fedify/vocab';
 import {Temporal} from '@js-temporal/polyfill';
 import {esc,fromRow} from './content.mjs';
+import {ACTOR_PATH,HANDLE,IDENTIFIER,ORIGIN} from './federation-identity.mjs';
+import {onFollowResponse,onRemoteDelete,onRemotePost} from './federation-reading.mjs';
 
-export const IDENTIFIER='hiroba';
-export const ORIGIN='https://monozukuri-hiroba-tomo.pages.dev';
-export const ACTOR_PATH='/ap/actors/hiroba';
-export const HANDLE='@hiroba@monozukuri-hiroba-tomo.pages.dev';
+export {ACTOR_PATH,HANDLE,IDENTIFIER,ORIGIN};
 const instant=value=>Temporal.Instant.from(value);
 const keys=new WeakMap();
 const builder=createFederationBuilder();
@@ -31,7 +30,7 @@ builder.setActorDispatcher('/ap/actors/{identifier}',async(ctx,identifier)=>{
  return new Person({id:ctx.getActorUri(identifier),preferredUsername:identifier,name:'ものづくり広場',
   summary:'<p>文章・仕事・絵画・音楽・映像・研究・開発。新しい作品のお知らせを届ける、ものづくり広場のアカウントです。</p>',
   url:new URL(ORIGIN+'/'),inbox:ctx.getInboxUri(identifier),outbox:ctx.getOutboxUri(identifier),
-  followers:ctx.getFollowersUri(identifier),publicKey:key.cryptographicKey,assertionMethods:[key.multikey],
+  followers:ctx.getFollowersUri(identifier),following:ctx.getFollowingUri(identifier),publicKey:key.cryptographicKey,assertionMethods:[key.multikey],
   endpoints:new Endpoints({sharedInbox:ctx.getInboxUri()}),
   manuallyApprovesFollowers:false});
 }).setKeyPairsDispatcher((ctx,identifier)=>identifier===IDENTIFIER?keyPairs(ctx.data.DB):[])
@@ -39,6 +38,7 @@ builder.setActorDispatcher('/ap/actors/{identifier}',async(ctx,identifier)=>{
 
 // The collection is discoverable; individual followers are kept private.
 builder.setFollowersDispatcher('/ap/actors/{identifier}/followers',(_ctx,id)=>id===IDENTIFIER?{items:[]}:null);
+builder.setFollowingDispatcher('/ap/actors/{identifier}/following',(_ctx,id)=>id===IDENTIFIER?{items:[]}:null);
 
 export async function onFollow(ctx,follow){
  if(!follow.id||follow.objectId?.href!==ctx.getActorUri(IDENTIFIER).href||!follow.actorId)return;
@@ -72,10 +72,9 @@ export async function onUndo(ctx,undo){
 
 builder.setInboxListeners('/ap/actors/{identifier}/inbox','/ap/inbox')
  .on(Follow,onFollow).on(Undo,onUndo)
- .on(Delete,async(ctx,activity)=>{
-  if(activity.actorId&&activity.objectId?.href===activity.actorId.href)
-   await ctx.data.DB.prepare('DELETE FROM ap_followers WHERE actor=?').bind(activity.actorId.href).run();
- }).setSharedKeyDispatcher(()=>({identifier:IDENTIFIER}));
+ .on(Accept,onFollowResponse).on(Reject,onFollowResponse)
+ .on(Create,onRemotePost).on(Update,onRemotePost).on(Delete,onRemoteDelete)
+ .setSharedKeyDispatcher(()=>({identifier:IDENTIFIER}));
 
 export async function publication(db,id){
  return db.prepare(`SELECT a.id AS publication_id,a.published_at,a.deleted_at,p.*

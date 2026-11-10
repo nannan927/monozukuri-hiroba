@@ -3,7 +3,8 @@ import redirects from '../src/data/legacy-redirects.json' with { type: 'json' };
 import {validatePost,fromRow,sortPosts,InputError,normalizeLegacyPost} from './content.mjs';
 import {session,newSession,cookie,digest,equal,passwordHash,validPassword,randomToken,rateLimit} from './auth.mjs';
 import {publicPage,rss,article,shell} from './render.mjs';
-import {federationPath,federationFetch,federationEnabled,flushPublications,ORIGIN} from './federation.mjs';
+import {buildFederation,federationPath,federationFetch,federationEnabled,flushPublications,ORIGIN} from './federation.mjs';
+import {resolveActor,startFollowing,stopFollowing,listFollowing,readInbox,flushFollowJobs} from './federation-reading.mjs';
 
 const noStore={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'};
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{...noStore,'Content-Type':'application/json; charset=utf-8',...headers}});
@@ -47,6 +48,22 @@ async function api(request,env,url){
  }
  if(!auth)return json({error:'ログインしてください。'},401);
  if(method!=='GET'&&!equal(request.headers.get('x-csrf-token'),auth.csrf))return json({error:'認証の有効期限を確認してください。ページを開き直してください。'},403);
+ if(path.startsWith('/api/admin/reading/')){
+  if(!federationEnabled(env))return json({error:'外部との連携は無効です。'},503);
+  if(path==='/api/admin/reading/following'&&method==='GET')return json({items:await listFollowing(db)});
+  if(path==='/api/admin/reading/inbox'&&method==='GET')return json(await readInbox(db,url.searchParams.get('before')));
+  if(path==='/api/admin/reading/unfollow'&&method==='POST'){
+   const input=await body(request);
+   if(typeof input.id!=='string'||!/^[a-f0-9-]{36}$/.test(input.id))throw new InputError('解除する相手を選んでください。');
+   await stopFollowing(db,input.id);return json({ok:true});
+  }
+  if(['/api/admin/reading/lookup','/api/admin/reading/follow'].includes(path)&&method==='POST'){
+   const input=await body(request),federation=await buildFederation(env),ctx=federation.createContext(new URL(ORIGIN),env);
+   if(path.endsWith('/lookup'))return json({profile:await resolveActor(ctx,input.address)});
+   return json({subscription:await startFollowing(ctx,input.address)},202);
+  }
+  return json({error:'操作が見つかりません。'},404);
+ }
  if(path==='/api/admin/federation'&&method==='GET'){
   if(!federationEnabled(env))return json({enabled:false});
   const counts=await db.prepare(`SELECT (SELECT count(*) FROM ap_followers) followers,
@@ -123,6 +140,10 @@ export default {
     if(federationEnabled(env)&&url.origin!==ORIGIN&&request.method!=='GET')return json({error:'本番サイトの管理画面から操作してください。'},403);
     try{
      const response=await api(request,env,url);
+     if(response.ok&&request.method==='POST'&&['/api/admin/reading/follow','/api/admin/reading/unfollow'].includes(path)){
+      const task=flushFollowJobs(env).catch(error=>console.error('Follow enqueue deferred to scheduled recovery',error?.name));
+      if(ctx)ctx.waitUntil(task);else await task;
+     }
      if(response.ok&&['POST','PUT'].includes(request.method)&&/^\/api\/admin\/posts(?:\/|$)/.test(path)&&federationEnabled(env)){
       const task=flushPublications(env).catch(error=>console.error('Federation enqueue deferred to scheduled recovery',error?.name));
       if(ctx)ctx.waitUntil(task);else await task;

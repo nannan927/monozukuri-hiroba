@@ -47,10 +47,54 @@ async function init(){
 }
 async function refreshFederation(){
  const el=$('federation-status');
- try{const status=await api('federation');el.hidden=!status.enabled;$('retry-federation').hidden=!status.failed;if(status.enabled)el.textContent=`外部フォロワー ${status.followers}人。新作の公開時に、見出し・説明・表紙画像・作品へのリンクを届けます。${status.pending?` 配信の準備待ち ${status.pending}件。`:''}${status.failed?` 届けられなかった通知が${status.failed}件あります。`:''}`;}
+ try{const status=await api('federation');el.hidden=!status.enabled;$('reading-panel').hidden=!status.enabled;$('retry-federation').hidden=!status.failed;if(status.enabled)el.textContent=`外部フォロワー ${status.followers}人。新作の公開時に、見出し・説明・表紙画像・作品へのリンクを届けます。${status.pending?` 配信の準備待ち ${status.pending}件。`:''}${status.failed?` 送受信に失敗した通信が${status.failed}件あります。`:''}`;}
  catch{el.hidden=false;el.textContent='外部への配信状況を取得できませんでした。ページを開き直すと再確認できます。';}
 }
-$<HTMLButtonElement>('retry-federation').onclick=async()=>{const button=$<HTMLButtonElement>('retry-federation');button.disabled=true;try{const result=await api('federation/retry','POST',{});notice(`${result.retried}件の通知を再送の待ち行列に戻しました。`);await refreshFederation();}catch(e){notice((e as Error).message,true);}finally{button.disabled=false;}};
+type FollowProfile={actor:string;name:string;profile_url:string};
+type Subscription=FollowProfile&{id:string;status:'pending'|'accepted'|'rejected'|'cancelling';delivery_pending:number};
+type Received=FollowProfile&{seq:number;url:string;title:string;html:string;summary:string;sensitive:number;published:string|null;received_at:string};
+let followPreview:FollowProfile|null=null,readingNext:string|null=null,readingBusy=false;
+const readingNotice=(text:string,error=false)=>{$('reading-notice').textContent=text;$('reading-notice').dataset.error=String(error);};
+function externalLink(label:string,url:string){const a=document.createElement('a');a.textContent=label;a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a;}
+function showFollowing(items:Subscription[]){
+ const labels={pending:'承認待ち',accepted:'フォロー中',rejected:'申請が承認されませんでした',cancelling:'解除の送信待ち'};
+ $('following-list').replaceChildren(...items.map(item=>{const row=document.createElement('div');row.className='following-item';row.append(externalLink(item.name,item.profile_url));const actor=document.createElement('small');actor.textContent=item.actor;const state=document.createElement('p');state.textContent=item.status==='pending'&&item.delivery_pending?'申請の送信待ち':labels[item.status];const button=document.createElement('button');button.type='button';button.textContent=item.status==='pending'?'申請を取り消す':item.status==='rejected'?'一覧から外す':'フォローを解除';button.disabled=item.status==='cancelling';button.onclick=async()=>{button.disabled=true;try{await api('reading/unfollow','POST',{id:item.id});readingNotice('解除を受け付けました。相手への通知を順次送信します。');await refreshReading();}catch(e){readingNotice((e as Error).message,true);button.disabled=false;}};row.append(actor,state,button);return row;}));
+ if(!items.length)$('following-list').textContent='まだフォロー先がありません。';
+}
+function showReceived(items:Received[],append=false){
+ if(!append)$('reading-inbox').replaceChildren();
+ for(const item of items){
+  const article=document.createElement('article');article.className='reading-item';article.append(externalLink(item.name,item.profile_url));
+  const time=document.createElement('small');const date=new Date(item.published||item.received_at);time.textContent=Number.isNaN(date.getTime())?'':date.toLocaleString('ja-JP');article.append(time);
+  if(item.title){const title=document.createElement('h3');title.textContent=item.title;article.append(title);}
+  const content=document.createElement('div');content.className='reading-body';content.innerHTML=item.html;
+  if(item.summary||item.sensitive){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent=item.summary||'内容を表示する';details.append(summary,content);article.append(details);}else article.append(content);
+  article.append(externalLink('元の投稿を開く ↗',item.url));$('reading-inbox').append(article);
+ }
+ if(!$('reading-inbox').children.length)$('reading-inbox').textContent='受信した新作はまだありません。';
+}
+async function refreshReading(more=false){
+ if(readingBusy)return;readingBusy=true;$<HTMLButtonElement>('refresh-reading').disabled=true;$<HTMLButtonElement>('more-reading').disabled=true;
+ try{
+  const feed=await api('reading/inbox'+(more&&readingNext?'?before='+encodeURIComponent(readingNext):''));
+  if(!more)showFollowing((await api('reading/following')).items);
+  showReceived(feed.items,more);readingNext=feed.next;$('more-reading').hidden=!readingNext;
+ }catch(e){readingNotice((e as Error).message,true);}finally{readingBusy=false;$<HTMLButtonElement>('refresh-reading').disabled=false;$<HTMLButtonElement>('more-reading').disabled=false;}
+}
+$('reading-panel').addEventListener('toggle',()=>{if($<HTMLDetailsElement>('reading-panel').open)void refreshReading();});
+$('refresh-reading').onclick=()=>{void refreshReading();void refreshFederation();};
+$('more-reading').onclick=()=>void refreshReading(true);
+$<HTMLInputElement>('follow-address').addEventListener('input',()=>{followPreview=null;$('follow-preview').hidden=true;});
+$<HTMLFormElement>('follow-search-form').addEventListener('submit',async event=>{
+ event.preventDefault();const button=$<HTMLButtonElement>('lookup-follow');button.disabled=true;followPreview=null;$('follow-preview').hidden=true;readingNotice('相手を確認しています…');
+ const address=$<HTMLInputElement>('follow-address').value.trim();
+ try{const result=await api('reading/lookup','POST',{address});if($<HTMLInputElement>('follow-address').value.trim()!==address)return;followPreview=result.profile;$('follow-preview-name').textContent=followPreview!.name;const link=$<HTMLAnchorElement>('follow-preview-link');link.href=followPreview!.profile_url;link.textContent=followPreview!.actor;$('follow-preview').hidden=false;readingNotice('相手を確認して、フォローボタンを押してください。');}catch(e){readingNotice((e as Error).message,true);}finally{button.disabled=false;}
+});
+$('confirm-follow').onclick=async()=>{
+ if(!followPreview)return;const button=$<HTMLButtonElement>('confirm-follow');button.disabled=true;
+ try{const result=await api('reading/follow','POST',{address:followPreview.actor});readingNotice(result.subscription.status==='accepted'?'すでにフォローしています。':result.subscription.status==='cancelling'?'解除の送信待ちです。完了後にもう一度フォローできます。':'フォロー申請を受け付けました。承認後に届く新作をここで読めます。');followPreview=null;$('follow-preview').hidden=true;await refreshReading();}catch(e){readingNotice((e as Error).message,true);}finally{button.disabled=false;}
+};
+$<HTMLButtonElement>('retry-federation').onclick=async()=>{const button=$<HTMLButtonElement>('retry-federation');button.disabled=true;try{const result=await api('federation/retry','POST',{});notice(`${result.retried}件の通信を再試行の待ち行列に戻しました。`);await refreshFederation();}catch(e){notice((e as Error).message,true);}finally{button.disabled=false;}};
 // The one-time setup code stays in the fragment and is removed from browser history.
 const token=new URLSearchParams(location.hash.slice(1)).get('setup');if(token){$<HTMLInputElement>('setup-token').value=token;history.replaceState(null,'',location.pathname);}
 login.addEventListener('submit',async event=>{event.preventDefault();const password=$<HTMLInputElement>('login-password').value;if(!configured&&password!==$<HTMLInputElement>('password-confirm').value){notice('確認用のパスワードが一致しません。',true);return;}$<HTMLButtonElement>('login-submit').disabled=true;try{await api(configured?'login':'setup','POST',{password,token:$<HTMLInputElement>('setup-token').value});login.reset();await init();}catch(e){notice((e as Error).message,true);}finally{$<HTMLButtonElement>('login-submit').disabled=false;}});

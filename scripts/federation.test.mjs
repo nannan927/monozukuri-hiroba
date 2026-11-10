@@ -10,7 +10,7 @@ import worker from '../cms/worker.mjs';
 import {newSession} from '../cms/auth.mjs';
 
 class D1 {
- constructor(){this.db=new DatabaseSync(':memory:');this.db.exec(readFileSync('migrations/0001_cms.sql','utf8'));this.db.exec(readFileSync('migrations/0003_federation.sql','utf8'));}
+ constructor(){this.db=new DatabaseSync(':memory:');for(const file of ['0001_cms.sql','0003_federation.sql','0004_federation_reading.sql'])this.db.exec(readFileSync('migrations/'+file,'utf8'));}
  prepare(sql){let args=[];const db=this.db;const run=()=>{const s=db.prepare(sql);if(/^\s*SELECT/i.test(sql)||/RETURNING/i.test(sql))return {results:s.all(...args)};const r=s.run(...args);return {results:[],meta:{changes:Number(r.changes)}};};return {bind(...values){args=values;return this;},async first(){return run().results[0]||null;},async all(){return run();},async run(){return run();}};}
  async batch(statements){this.db.exec('BEGIN');try{const r=[];for(const s of statements)r.push(await s.all());this.db.exec('COMMIT');return r;}catch(e){this.db.exec('ROLLBACK');throw e;}}
 }

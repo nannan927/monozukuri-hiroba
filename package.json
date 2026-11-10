@@ -15,7 +15,7 @@
     "render:autumn": "node scripts/render-autumn-dusk.mjs",
     "test:autumn": "node --test scripts/autumn-dusk.test.mjs",
     "test:cms": "node --test scripts/cms.test.mjs",
-    "test:federation": "node --test scripts/federation.test.mjs",
+    "test:federation": "node --test scripts/federation.test.mjs scripts/federation-reading.test.mjs",
     "test:federation-runtime": "node scripts/federation-runtime.mjs",
     "deploy:federation": "wrangler deploy --config wrangler.federation.jsonc"
   },
