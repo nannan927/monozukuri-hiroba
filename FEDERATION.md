@@ -99,3 +99,11 @@ npm run test:federation-runtime
 - 新作のCreate・修正・取り下げは、workerd/D1/KV/Queueを接続した模擬環境で検証。両サービスへの実際の新作通知の到着確認は、次の公開時に行います。
 - 配信用Worker版: `ae3c375c-6c30-43ea-9911-a69c0d8adf9d`。5分ごとの回復処理とQueueの受信処理を公開済み。
 - Workers初回設定として `monozukuri-hiroba-tomo.workers.dev` を登録。作品サイトの正式URLは従来のPages URLです。
+
+### フォロー・受信機能の追加確認（同日）
+
+- `0004_federation_reading.sql` を本番に適用。Worker版は `f5d44887-ec9f-467a-bed1-7fb4de7dc384`、Pagesの公開は `57df4e7a`（実装コミット `039f93e`）。
+- 別の公開URLに一時的な検証用Actorを置き、管理APIからアドレス検索・Follow送信、相手のAccept、公開Createの受信・本文の安全化・管理APIでの閲覧、Delete、Undoの往復を確認。送ったFollow/UndoのHTTP署名も検証しました。
+- 既存39作品・署名鍵・フォロワーの内容が変わっていないことを照合。認証なしの受信APIは401、プレビューのActorは404、既存ページ・RSSは200を確認しました。
+- 検証用の受信内容・フォロー状態・セッション・受領記録を除去し、一時Workerも削除しました。通常の運用では管理画面から実際の相手を選んでフォローします。
+- 更新の順序、重複、解除と受信の競合は単体テスト、署名付きUpdateの反映はworkerdで確認。実際のMastodon・Misskeyのアカウントから新作を受け取る確認は、運用する相手をフォローした後に行います。
