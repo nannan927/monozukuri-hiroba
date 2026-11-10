@@ -42,6 +42,9 @@ builder.setFollowersDispatcher('/ap/actors/{identifier}/followers',(_ctx,id)=>id
 
 export async function onFollow(ctx,follow){
  if(!follow.id||follow.objectId?.href!==ctx.getActorUri(IDENTIFIER).href||!follow.actorId)return;
+ // Delayed retries of a cancelled Follow need no network access. Keep the
+ // same check in the INSERT as well, so a concurrent Undo still wins.
+ if(await ctx.data.DB.prepare('SELECT 1 FROM ap_removed_follows WHERE follow_id=? AND actor=?').bind(follow.id.href,follow.actorId.href).first())return;
  const actor=await follow.getActor(ctx);
  if(actor?.id?.href!==follow.actorId.href||!safeRemote(actor.id)||!safeRemote(actor.inboxId))return;
  const saved=await ctx.data.DB.prepare(`INSERT INTO ap_followers(actor,inbox,follow_id)

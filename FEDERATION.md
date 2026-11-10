@@ -29,6 +29,8 @@ flowchart LR
   Inbox --> Queue
 ```
 
+`global_fetch_strictly_public` をPagesと配信用Workerで有効にし、同じCloudflareアカウントにある別の創作サイトへも公開URLを経由して接続します。
+
 PagesはQueueの送信側です。別Workerが受信側と回復処理を担当します。KVはFedifyのキャッシュと重複処理の抑制に使用し、アカウントの署名鍵とフォロワーはD1に保存します。署名鍵を毎回生成し直してはいけません。公開プレビューからのフォロー受付と管理APIへの書き込みは拒否します。
 
 配送失敗は待ち時間を延ばして最大8回試します。それでも失敗したジョブをD1の `ap_failures` に保持します。管理画面にはフォロワー数、配信準備待ち件数、失敗件数を表示し、失敗分は「届かなかった通知を再送する」で20件ずつ再投入できます。統計・再送には既存の管理者認証が必要です。再試行でもActivity IDは変わりません。
@@ -39,7 +41,7 @@ Node.js 24を使います。現在のPages/D1権限に加え、Worker・KV・Que
 
 ```sh
 npx wrangler login --device --browser=false --scopes account:read user:read pages:write d1:write workers:write workers_scripts:write workers_kv:write queues:write
-npx wrangler kv namespace create monozukuri-hiroba-federation
+npx wrangler kv namespace create FEDERATION_KV --config wrangler.federation.jsonc
 npx wrangler queues create monozukuri-hiroba-federation
 ```
 
@@ -73,3 +75,12 @@ npm run test:federation-runtime
 依存ライブラリの `@opentelemetry/sdk-metrics` は、Fedifyが固定する版の推移依存に脆弱性があるため、互換性のある2.xの修正版2.12.1にoverrideしています。
 
 参考: [FedifyのCloudflare対応](https://fedify.dev/manual/deploy)、[PagesのQueueバインディング](https://developers.cloudflare.com/pages/functions/bindings/#queue-producers)。
+
+## 本番での確認（2026-11-10）
+
+- 既存39作品を保持して導入。過去作品の配信イベントは作成していません。
+- WebFinger・Actor・フォロー案内・既存ページ・RSSの応答を確認。未署名Followは401、プレビューのActorは404。
+- 別の公開URLに設けた検証用Actorから署名付きFollowを送り、本番Queueを経由して返ったAcceptの署名を検証。Undoによる解除も確認しました。
+- 新作のCreate・修正・取り下げは、workerd/D1/KV/Queueを接続した模擬環境で検証。実在のMastodonアカウントの画面上での表示確認は別途行います。
+- 配信用Worker版: `ae3c375c-6c30-43ea-9911-a69c0d8adf9d`。5分ごとの回復処理とQueueの受信処理を公開済み。
+- Workers初回設定として `monozukuri-hiroba-tomo.workers.dev` を登録。作品サイトの正式URLは従来のPages URLです。

@@ -72,6 +72,7 @@ test('Follow/Undo is idempotent, checks actor ownership and handles out-of-order
  await onFollow(f.sendCtx,follow);await onFollow(f.sendCtx,follow);assert.equal(f.DB.db.prepare('SELECT count(*) n FROM ap_followers').get().n,1);assert.equal(f.sent[0][2].id.href,f.sent[1][2].id.href);
  await onUndo(f.sendCtx,new Undo({actor:new URL('https://attacker.example/user'),object:follow}));assert.equal(f.DB.db.prepare('SELECT count(*) n FROM ap_followers').get().n,1);
  await onUndo(f.sendCtx,new Undo({actor:remoteId,object:follow}));assert.equal(f.DB.db.prepare('SELECT count(*) n FROM ap_followers').get().n,0);
+ const cancelled=f.follow();cancelled.getActor=async()=>{throw new Error('Deleted remote account cannot be fetched');};await onFollow(f.sendCtx,cancelled);
  await onFollow(f.sendCtx,follow);assert.equal(f.DB.db.prepare('SELECT count(*) n FROM ap_followers').get().n,0);
  await onFollow(f.sendCtx,f.follow('2'));await onUndo(f.sendCtx,new Undo({actor:remoteId,object:follow}));assert.equal(f.DB.db.prepare('SELECT follow_id FROM ap_followers').get().follow_id,f.follow('2').id.href);
  const third=f.follow('3');await onUndo(f.sendCtx,new Undo({actor:remoteId,object:third}));await onFollow(f.sendCtx,third);assert.equal(f.DB.db.prepare('SELECT follow_id FROM ap_followers').get().follow_id,f.follow('2').id.href);

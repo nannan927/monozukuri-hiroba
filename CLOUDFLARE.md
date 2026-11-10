@@ -59,3 +59,7 @@ Direct Uploadを使用しています。Cloudflare内蔵のGit連携への切り
 ## Glyphsデザインの反映
 
 2026-11-07、承認済みプレビューを公開版へ移植。デプロイ `3753385b`、ソース `db5f5f4`。旧デザインはGitタグ `before-glyphs-design` に保持。PC・スマートフォンの表示とスクロール、CMSテスト8件、公開ページ・検索・作品コード・管理APIの認証を確認。本番39投稿を保持し、D1の更新は行っていません。
+
+## 外部からのフォローと新作配信
+
+2026-11-10にActivityPubを導入しました。アドレスは `@hiroba@monozukuri-hiroba-tomo.pages.dev`、案内は `/follow/`。既存39作品を保持しています。D1の `0003_federation.sql` を適用し、KV・Queue・配信用Workerを追加しました。有料プランへの変更は行っていません。動作と運用手順は [FEDERATION.md](FEDERATION.md) を参照してください。

@@ -19,7 +19,7 @@ export default {
     else throw new Error('Unknown federation queue message');
     message.ack();
    }catch(error){
-    console.error('Federation delivery failed',error?.name);
+    console.error('Federation delivery failed',{name:error?.name,status:error?.status,message:String(error?.message||'').slice(0,300)});
     if(message.attempts>=8){
      // Keep failed jobs durably for inspection/replay without logging private data.
      await env.DB.prepare('INSERT OR IGNORE INTO ap_failures(id,message,failed_at) VALUES(?,?,?)')

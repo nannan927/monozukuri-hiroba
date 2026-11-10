@@ -28,7 +28,7 @@ const bundled=await build({stdin:{contents:"import consumer from './cms/federati
 // Miniflare's loopback transport rewrites Host to 127.0.0.1. Restore the
 // original HTTP host in the test adapter; production receives it directly.
 const pagesBundle=await build({stdin:{contents:"import pages from './dist/_worker.js'; export default {fetch(r,...args){const headers=new Headers(r.headers);headers.set('host',new URL(r.url).host);return pages.fetch(new Request(r,{headers}),...args)}}",resolveDir:process.cwd()},bundle:true,format:'esm',platform:'browser',target:'es2022',external:['node:*'],write:false});
-const shared={compatibilityDate:'2026-11-05',compatibilityFlags:['nodejs_compat'],kvNamespaces:{FEDERATION_KV:'test-kv'},d1Databases:{DB:'test-db'},queueProducers:{FEDERATION_QUEUE:'federation-test'},bindings:{FEDERATION_ENABLED:'true'},outboundService:outbound};
+const shared={compatibilityDate:'2026-11-05',compatibilityFlags:['nodejs_compat','global_fetch_strictly_public'],kvNamespaces:{FEDERATION_KV:'test-kv'},d1Databases:{DB:'test-db'},queueProducers:{FEDERATION_QUEUE:'federation-test'},bindings:{FEDERATION_ENABLED:'true'},outboundService:outbound};
 const mf=new Miniflare(convertV4MiniflareOptions({workers:[
  {name:'pages',modules:true,script:pagesBundle.outputFiles[0].text,...shared,serviceBindings:{ASSETS:()=>new Response('static')}},
  {name:'consumer',modules:true,script:bundled.outputFiles[0].text,...shared,queueConsumers:{'federation-test':{maxBatchSize:1,maxBatchTimeout:1,maxRetries:0}}}
