@@ -38,7 +38,7 @@ PagesはQueueの送信側です。別Workerが受信側と回復処理を担当�
 Node.js 24を使います。現在のPages/D1権限に加え、Worker・KV・Queueの作成権限が必要です。有料プランへの変更は行いません。
 
 ```sh
-npx wrangler login --device --browser=false --scopes account:read user:read pages:write d1:write workers:write workers_kv:write queues:write
+npx wrangler login --device --browser=false --scopes account:read user:read pages:write d1:write workers:write workers_scripts:write workers_kv:write queues:write
 npx wrangler kv namespace create monozukuri-hiroba-federation
 npx wrangler queues create monozukuri-hiroba-federation
 ```

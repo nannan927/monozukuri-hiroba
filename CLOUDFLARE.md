@@ -29,7 +29,7 @@ npm run deploy
 認証の期限が切れた場合は、次を実行し、表示された認証URLとコードでログインします。
 
 ```sh
-npx wrangler@4.157.0 login --device --browser=false --scopes account:read user:read pages:write d1:write workers:write workers_kv:write queues:write
+npx wrangler@4.157.0 login --device --browser=false --scopes account:read user:read pages:write d1:write workers:write workers_scripts:write workers_kv:write queues:write
 ```
 
 記事や作品は管理画面から編集します。初回移行後はD1を正として扱います。詳細は [ADMIN.md](ADMIN.md) を参照してください。元のSites版との自動同期はありません。初版は `../monozukuri-hiroba/`、Sites改訂版は `../monozukuri-hiroba-geek/` に保持しています。
