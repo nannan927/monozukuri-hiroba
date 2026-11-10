@@ -1,5 +1,6 @@
 import {renderHome} from '../src/lib/editorial-home.ts';
 import {categories,categoryName,esc} from './content.mjs';
+import {HANDLE,ACTOR_PATH} from './federation.mjs';
 const pathFor=p=>`/works/${p.slug}/`;
 const tags=p=>`<div class="work-tags">${p.tags.map(t=>`<a href="/search/?q=${encodeURIComponent(t)}">#${esc(t)}</a>`).join('')}</div>`;
 const date=p=>esc(p.date.replaceAll('-','.'));
@@ -31,6 +32,9 @@ export function publicPage(path,url,posts,t){
  let main,title='',description;const by=c=>posts.filter(p=>p.category===c);
  if(path==='/'){
   main=renderHome(posts,t.links,categories.map(c=>({id:c[0],name:c[1]})));
+ }else if(path==='/follow/'){
+  title='新作を受け取る';
+  main=intro(title,'FOLLOW')+`<div class="article-body"><p>Mastodonなどで、ものづくり広場をフォローできます。新しい作品を公開すると、お使いのタイムラインにお知らせが届きます。</p><p>下のアドレスをコピーして、お使いのサービスの検索欄に貼り付けてください。</p><p><code style="overflow-wrap:anywhere;user-select:all">${HANDLE}</code></p><ol><li>アドレスを検索する。</li><li>「ものづくり広場」のプロフィールを開く。</li><li>フォローボタンを押す。</li></ol><p>作品の文章や絵、音楽は、このサイトでゆっくりご覧いただけます。</p><p><a href="${ACTOR_PATH}" rel="me">フォロー用プロフィール</a> · <a href="/rss.xml">RSSで読む</a></p></div>`;
  }else if(path==='/works/'||path==='/literature/'||categories.some(c=>path===`/${c[0]}/`)){
   const category=categories.find(c=>path===`/${c[0]}/`);
   let selected=category?by(category[0]):path==='/literature/'?posts.filter(p=>p.tags.includes('文学')):posts;

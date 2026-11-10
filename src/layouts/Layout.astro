@@ -20,6 +20,7 @@ const pageTitle = title ? `${title} | ものづくり広場` : 'ものづくり�
     <link rel="canonical" href={new URL(current, Astro.site)} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title="ものづくり広場" href="/rss.xml" />
+    <link rel="alternate" type="application/activity+json" title="ものづくり広場をフォロー" href="https://monozukuri-hiroba-tomo.pages.dev/ap/actors/hiroba" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -37,7 +38,7 @@ const pageTitle = title ? `${title} | ものづくり広場` : 'ものづくり�
         </nav>
       </header>
       <main id="main"><slot /></main>
-      <footer class="site-footer hg-footer"><small>© {new Date().getFullYear()} ものづくり広場</small><div><a href="/search/">検索</a><a href="/works/">全作品</a><a href="/creative/">創作</a><a href="/literature/">文学</a><a href="/now/">/now</a><a href="/about/">このサイトについて</a><a href="/rss.xml">RSS</a><span aria-hidden="true">/</span><a href="#main">↑ top</a></div></footer>
+      <footer class="site-footer hg-footer"><small>© {new Date().getFullYear()} ものづくり広場</small><div><a href="/search/">検索</a><a href="/works/">全作品</a><a href="/creative/">創作</a><a href="/literature/">文学</a><a href="/now/">/now</a><a href="/about/">このサイトについて</a><a href="/follow/">フォロー</a><a href="/rss.xml">RSS</a><span aria-hidden="true">/</span><a href="#main">↑ top</a></div></footer>
     </div>
 
   </body>

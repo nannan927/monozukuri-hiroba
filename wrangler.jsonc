@@ -5,6 +5,9 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "vars": {"FEDERATION_ENABLED":"true"},
+  "kv_namespaces": [{"binding":"FEDERATION_KV","id":"00000000000000000000000000000000"}],
+  "queues": {"producers":[{"binding":"FEDERATION_QUEUE","queue":"monozukuri-hiroba-federation"}]},
   "d1_databases": [
     {
       "binding": "DB",

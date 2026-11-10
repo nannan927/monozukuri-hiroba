@@ -3,6 +3,7 @@ import redirects from '../src/data/legacy-redirects.json' with { type: 'json' };
 import {validatePost,fromRow,sortPosts,InputError,normalizeLegacyPost} from './content.mjs';
 import {session,newSession,cookie,digest,equal,passwordHash,validPassword,randomToken,rateLimit} from './auth.mjs';
 import {publicPage,rss,article,shell} from './render.mjs';
+import {federationPath,federationFetch,federationEnabled,flushPublications,ORIGIN} from './federation.mjs';
 
 const noStore={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'};
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{...noStore,'Content-Type':'application/json; charset=utf-8',...headers}});
@@ -46,6 +47,19 @@ async function api(request,env,url){
  }
  if(!auth)return json({error:'ログインしてください。'},401);
  if(method!=='GET'&&!equal(request.headers.get('x-csrf-token'),auth.csrf))return json({error:'認証の有効期限を確認してください。ページを開き直してください。'},403);
+ if(path==='/api/admin/federation'&&method==='GET'){
+  if(!federationEnabled(env))return json({enabled:false});
+  const counts=await db.prepare(`SELECT (SELECT count(*) FROM ap_followers) followers,
+   (SELECT count(*) FROM ap_events WHERE queued_at IS NULL) pending,
+   (SELECT count(*) FROM ap_failures) failed`).first();
+  return json({enabled:true,...counts});
+ }
+ if(path==='/api/admin/federation/retry'&&method==='POST'){
+  if(!federationEnabled(env))return json({error:'外部配信は無効です。'},503);
+  const failed=(await db.prepare('SELECT id,message FROM ap_failures ORDER BY failed_at LIMIT 20').all()).results;
+  for(const job of failed){await env.FEDERATION_QUEUE.send(JSON.parse(job.message));await db.prepare('DELETE FROM ap_failures WHERE id=?').bind(job.id).run();}
+  return json({retried:failed.length});
+ }
  if(path==='/api/admin/logout'&&method==='POST'){
   await db.prepare('DELETE FROM sessions WHERE token_hash=?').bind(auth.token_hash).run();return json({ok:true},200,{'Set-Cookie':cookie('',0)});
  }
@@ -99,12 +113,22 @@ async function api(request,env,url){
 }
 
 export default {
- async fetch(request,env){
+ async fetch(request,env,ctx){
   const url=new URL(request.url);let path;
   try{path=decodeURIComponent(url.pathname);}catch{return new Response('Bad Request',{status:400});}
   try{
+   if(federationPath(path))return await federationFetch(request,env);
    if(path.startsWith('/api/')){
-    try{return await api(request,env,url);}catch(e){if(e instanceof SyntaxError||e instanceof InputError)return json({error:e.message},400);throw e;}
+    // Sharing the production database with a preview must not permit publishing.
+    if(federationEnabled(env)&&url.origin!==ORIGIN&&request.method!=='GET')return json({error:'本番サイトの管理画面から操作してください。'},403);
+    try{
+     const response=await api(request,env,url);
+     if(response.ok&&['POST','PUT'].includes(request.method)&&/^\/api\/admin\/posts(?:\/|$)/.test(path)&&federationEnabled(env)){
+      const task=flushPublications(env).catch(error=>console.error('Federation enqueue deferred to scheduled recovery',error?.name));
+      if(ctx)ctx.waitUntil(task);else await task;
+     }
+     return response;
+    }catch(e){if(e instanceof SyntaxError||e instanceof InputError)return json({error:e.message},400);throw e;}
    }
    if(!['GET','HEAD'].includes(request.method))return new Response('Method Not Allowed',{status:405});
    if(path==='/admin'||path==='/admin/index.html')return Response.redirect(url.origin+'/admin/',302);

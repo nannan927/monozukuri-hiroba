@@ -2,7 +2,7 @@
 
 コード管理: [nannan927/monozukuri-hiroba](https://github.com/nannan927/monozukuri-hiroba)（`main` ブランチ）。
 
-Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは変更しません。公開手順は [CLOUDFLARE.md](CLOUDFLARE.md) を参照してください。
+Cloudflare Pages向けの独立したコピーです。`tomooooo.com` のDNSは変更しません。公開手順は [CLOUDFLARE.md](CLOUDFLARE.md)、外部からのフォローと新作配信は [FEDERATION.md](FEDERATION.md) を参照してください。
 
 文章・仕事・絵画・音楽・映像・研究・開発をまとめる、AstroとCloudflare D1による個人サイトです。青紫の文字と白い余白、大きな明朝体、ベジェ曲線、シアンの作品枠と鮮やかな色面を使ったGlyphs由来のデザインです。
 
@@ -105,7 +105,7 @@ PC・カセットなどのSVGはこのサイト向けのオリジナル素材で
 
 ## ホスティング
 
-Cloudflare Pagesの無料サブドメインで公開します。公開URLは https://monozukuri-hiroba-tomo.pages.dev/ です。設定済みなので `npm run deploy` で更新できます。公開URLを変更するときだけ `SITE_URL` で上書きします。
+Cloudflare Pagesの無料サブドメインで公開します。公開URLは https://monozukuri-hiroba-tomo.pages.dev/ です。設定済みなので `npm run deploy` で更新できます。ActivityPubのアカウントURLは永続的な識別子です。導入後のドメイン変更にはフォロワーの移行設計も必要で、`SITE_URL` だけの変更では移転できません。
 
 元の改訂版は `../monozukuri-hiroba-geek/`、初版は `../monozukuri-hiroba/` に保持しています。このコピーにはSitesのプロジェクトIDを含めていません。
 

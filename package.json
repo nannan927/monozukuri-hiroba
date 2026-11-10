@@ -11,17 +11,24 @@
     "build": "astro build && node scripts/build-cms.mjs",
     "preview": "astro preview --host 0.0.0.0",
     "check": "astro check",
-    "deploy": "npm run check && npm run build && npm run test:cms && npx --yes wrangler@4.157.0 pages deploy dist --project-name monozukuri-hiroba-tomo --branch main",
+    "deploy": "npm run check && npm run build && npm run test:cms && npm run test:federation && npm run test:federation-runtime && node scripts/check-federation-config.mjs && npm run deploy:federation && wrangler pages deploy dist --project-name monozukuri-hiroba-tomo --branch main",
     "render:autumn": "node scripts/render-autumn-dusk.mjs",
     "test:autumn": "node --test scripts/autumn-dusk.test.mjs",
-    "test:cms": "node --test scripts/cms.test.mjs"
+    "test:cms": "node --test scripts/cms.test.mjs",
+    "test:federation": "node --test scripts/federation.test.mjs",
+    "test:federation-runtime": "node scripts/federation-runtime.mjs",
+    "deploy:federation": "wrangler deploy --config wrangler.federation.jsonc"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.6",
     "@astrojs/rss": "4.0.19",
+    "@fedify/cfworkers": "2.4.5",
+    "@fedify/fedify": "2.4.5",
+    "@fedify/vocab": "2.4.5",
     "@fontsource/cormorant-garamond": "^5.3.0",
     "@fontsource/noto-serif-jp": "^5.3.1",
     "@fontsource/zen-maru-gothic": "5.3.1",
+    "@js-temporal/polyfill": "0.5.1",
     "astro": "7.4.5",
     "marked": "^18.1.3",
     "sanitize-html": "^2.18.1"
@@ -34,6 +41,11 @@
     "cheerio": "^1.2.0",
     "esbuild": "^0.28.2",
     "gray-matter": "^4.0.3",
-    "typescript": "^5.9.3"
+    "miniflare": "5.20261103.0-beta",
+    "typescript": "^5.9.3",
+    "wrangler": "4.157.0"
+  },
+  "overrides": {
+    "@opentelemetry/sdk-metrics": "2.12.1"
   }
 }

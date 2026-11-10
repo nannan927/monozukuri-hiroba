@@ -18,6 +18,8 @@ import '@fontsource/zen-maru-gothic/500.css';
   </section>
   <section id="workspace" hidden>
    <div class="admin-toolbar"><h1>投稿一覧</h1><button class="primary" id="new-post">＋ 新しい投稿</button><button id="export-posts">データを書き出す</button><button id="logout">ログアウト</button></div>
+   <p id="federation-status" class="hint" hidden></p>
+   <button id="retry-federation" type="button" hidden>届かなかった通知を再送する</button>
    <div class="admin-grid">
     <aside class="post-browser"><label class="sr-only" for="filter-search">投稿を検索</label><input id="filter-search" type="search" placeholder="タイトル・タグで検索"/><label class="sr-only" for="filter-status">公開状態</label><select id="filter-status"><option value="active">ごみ箱以外</option><option value="published">公開中</option><option value="draft">下書き</option><option value="trash">ごみ箱</option><option value="all">すべて</option></select><p id="list-count"></p><div id="post-list"></div></aside>
     <section class="editor-panel">

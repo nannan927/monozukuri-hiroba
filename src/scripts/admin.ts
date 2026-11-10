@@ -41,10 +41,16 @@ async function save(status:Post['status']){
 }
 async function init(){
  try{const s=await api('session');configured=s.configured;
-  if(s.authenticated){csrf=s.csrf;$('login-panel').hidden=true;$('workspace').hidden=false;await refreshList();notice('');}
+  if(s.authenticated){csrf=s.csrf;$('login-panel').hidden=true;$('workspace').hidden=false;await refreshList();notice('');void refreshFederation();}
   else{$('workspace').hidden=true;$('login-panel').hidden=false;$('login-title').textContent=configured?'ログイン':'初回設定';$('login-description').textContent=configured?'管理者のパスワードを入力してください。':'初期設定コードと、14文字以上のパスワードを入力してください。';$('setup-token-label').hidden=configured;$('password-confirm-label').hidden=configured;$<HTMLInputElement>('password-confirm').required=!configured;$<HTMLInputElement>('setup-token').required=!configured;$<HTMLInputElement>('login-password').autocomplete=configured?'current-password':'new-password';$('login-submit').textContent=configured?'ログイン':'管理者を設定';notice('');}
  }catch(e){notice((e as Error).message,true);}
 }
+async function refreshFederation(){
+ const el=$('federation-status');
+ try{const status=await api('federation');el.hidden=!status.enabled;$('retry-federation').hidden=!status.failed;if(status.enabled)el.textContent=`外部フォロワー ${status.followers}人。新作の公開時に、見出し・説明・表紙画像・作品へのリンクを届けます。${status.pending?` 配信の準備待ち ${status.pending}件。`:''}${status.failed?` 届けられなかった通知が${status.failed}件あります。`:''}`;}
+ catch{el.hidden=false;el.textContent='外部への配信状況を取得できませんでした。ページを開き直すと再確認できます。';}
+}
+$<HTMLButtonElement>('retry-federation').onclick=async()=>{const button=$<HTMLButtonElement>('retry-federation');button.disabled=true;try{const result=await api('federation/retry','POST',{});notice(`${result.retried}件の通知を再送の待ち行列に戻しました。`);await refreshFederation();}catch(e){notice((e as Error).message,true);}finally{button.disabled=false;}};
 // The one-time setup code stays in the fragment and is removed from browser history.
 const token=new URLSearchParams(location.hash.slice(1)).get('setup');if(token){$<HTMLInputElement>('setup-token').value=token;history.replaceState(null,'',location.pathname);}
 login.addEventListener('submit',async event=>{event.preventDefault();const password=$<HTMLInputElement>('login-password').value;if(!configured&&password!==$<HTMLInputElement>('password-confirm').value){notice('確認用のパスワードが一致しません。',true);return;}$<HTMLButtonElement>('login-submit').disabled=true;try{await api(configured?'login':'setup','POST',{password,token:$<HTMLInputElement>('setup-token').value});login.reset();await init();}catch(e){notice((e as Error).message,true);}finally{$<HTMLButtonElement>('login-submit').disabled=false;}});

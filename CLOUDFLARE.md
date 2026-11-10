@@ -24,12 +24,12 @@ npm ci
 npm run deploy
 ```
 
-`deploy` は型チェック・Astro/Workerビルド・CMSテストを行い、既存のPagesプロジェクトに公開します。`astro.config.mjs` に正式なPages URLを設定しているため、通常は環境変数の指定は不要です。移転時のみ `SITE_URL` で上書きできます。
+`deploy` は型チェック・Astro/Workerビルド・CMSと連合配信のテストを行い、配信用Workerと既存のPagesプロジェクトに公開します。ActivityPubの初回導入は [FEDERATION.md](FEDERATION.md) の手順が先に必要です。`astro.config.mjs` に正式なPages URLを設定しているため、通常は環境変数の指定は不要です。移転時のみ `SITE_URL` で上書きできます。
 
 認証の期限が切れた場合は、次を実行し、表示された認証URLとコードでログインします。
 
 ```sh
-npx wrangler@4.157.0 login --device --browser=false --scopes account:read user:read pages:write d1:write
+npx wrangler@4.157.0 login --device --browser=false --scopes account:read user:read pages:write d1:write workers:write workers_kv:write queues:write
 ```
 
 記事や作品は管理画面から編集します。初回移行後はD1を正として扱います。詳細は [ADMIN.md](ADMIN.md) を参照してください。元のSites版との自動同期はありません。初版は `../monozukuri-hiroba/`、Sites改訂版は `../monozukuri-hiroba-geek/` に保持しています。
