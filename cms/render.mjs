@@ -34,7 +34,7 @@ export function publicPage(path,url,posts,t){
   main=renderHome(posts,t.links,categories.map(c=>({id:c[0],name:c[1]})));
  }else if(path==='/follow/'){
   title='新作を受け取る';
-  main=intro(title,'FOLLOW')+`<div class="article-body"><p>Mastodonなどで、ものづくり広場をフォローできます。新しい作品を公開すると、お使いのタイムラインにお知らせが届きます。</p><p>下のアドレスをコピーして、お使いのサービスの検索欄に貼り付けてください。</p><p><code style="overflow-wrap:anywhere;user-select:all">${HANDLE}</code></p><ol><li>アドレスを検索する。</li><li>「ものづくり広場」のプロフィールを開く。</li><li>フォローボタンを押す。</li></ol><p>作品の文章や絵、音楽は、このサイトでゆっくりご覧いただけます。</p><p><a href="${ACTOR_PATH}" rel="me">フォロー用プロフィール</a> · <a href="/rss.xml">RSSで読む</a></p></div>`;
+  main=intro(title,'FOLLOW')+`<div class="article-body"><p>Mastodonなどで、ものづくり広場をフォローできます。新しい作品を公開すると、お使いのタイムラインにお知らせが届きます。</p><p>お持ちのMastodonなどのアカウントにログインしてから、検索欄に下のアドレスを貼り付けてください。</p><p><code style="overflow-wrap:anywhere;user-select:all">${HANDLE}</code></p><ol><li>お使いのサービスに、ご自身のアカウントでログインする。</li><li>ログイン後の検索欄で、上のアドレス全体を検索する。</li><li>「ものづくり広場」のプロフィールを開き、フォローボタンを押す。</li></ol><h2>「サーバーを探す」と表示されている場合</h2><p>その画面では、ご自身のアカウントがあるサーバーを選びます。このサイトのアドレスを入れてもログインできません。ものづくり広場は、外部からフォローして新作を受け取るためのサイトです。</p><p>まだアカウントをお持ちでない方は、Mastodonなどのサービスでアカウントを作成してから、上の手順でフォローしてください。アカウントを作らず更新を受け取りたい方は、<a href="/rss.xml">RSS</a>も利用できます。</p><p>作品の文章や絵、音楽は、このサイトでゆっくりご覧いただけます。</p><p><a href="${ACTOR_PATH}" rel="me">フォロー用プロフィール</a> · <a href="/rss.xml">RSSで読む</a></p></div>`;
  }else if(path==='/works/'||path==='/literature/'||categories.some(c=>path===`/${c[0]}/`)){
   const category=categories.find(c=>path===`/${c[0]}/`);
   let selected=category?by(category[0]):path==='/literature/'?posts.filter(p=>p.tags.includes('文学')):posts;
